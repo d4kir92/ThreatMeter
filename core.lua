@@ -75,7 +75,7 @@ function ThreatMeter:UpdateHighestThreatPercentage()
 
 		if highestThreatPercentage >= 100 then
 			col = "|cffff0000"
-		elseif highestThreatPercentage >= 50 then
+		elseif highestThreatPercentage >= 67 then
 			col = "|cffffff00"
 		end
 
@@ -92,10 +92,10 @@ end
 function ThreatMeter:CreateFrame()
 	self.frame = CreateFrame("Frame", nil, UIParent)
 	self.frame:SetSize(200, 20)
-	self.frame:SetPoint("CENTER", 0, 0)
+	self.frame:SetPoint("CENTER", 0, 200)
 	self.text = self.frame:CreateFontString(nil, "OVERLAY")
 	self.text:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
-	self.text:SetPoint("CENTER", 0, 200)
+	self.text:SetPoint("CENTER", 0, 0)
 	self.frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 	self.frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 	self.frame:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
