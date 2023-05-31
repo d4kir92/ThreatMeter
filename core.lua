@@ -47,28 +47,26 @@ function ThreatMeter:UpdateHighestThreatPercentage()
 		highestThreatPercentage = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestThreatPercentage)
 	end
 
-	for i = 1, 5 do
-		highestThreatPercentage = ThreatMeter:TestThreat("arena" .. i, highestThreatPercentage)
-	end
-
 	for i = 1, 8 do
 		highestThreatPercentage = ThreatMeter:TestThreat("boss" .. i, highestThreatPercentage)
 	end
 
 	for i = 1, 4 do
-		highestThreatPercentage = ThreatMeter:TestThreat("party" .. i, highestThreatPercentage)
-		highestThreatPercentage = ThreatMeter:TestThreat("partypet" .. i, highestThreatPercentage)
+		highestThreatPercentage = ThreatMeter:TestThreat("party" .. i .. "target", highestThreatPercentage)
+		highestThreatPercentage = ThreatMeter:TestThreat("partypet" .. i .. "target", highestThreatPercentage)
 	end
 
 	for i = 1, 40 do
-		highestThreatPercentage = ThreatMeter:TestThreat("raid" .. i, highestThreatPercentage)
-		highestThreatPercentage = ThreatMeter:TestThreat("raidpet" .. i, highestThreatPercentage)
+		highestThreatPercentage = ThreatMeter:TestThreat("raid" .. i .. "target", highestThreatPercentage)
+		highestThreatPercentage = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestThreatPercentage)
 	end
 
 	highestThreatPercentage = ThreatMeter:TestThreat("target", highestThreatPercentage)
-	highestThreatPercentage = ThreatMeter:TestThreat("pet", highestThreatPercentage)
-	highestThreatPercentage = ThreatMeter:TestThreat("focus", highestThreatPercentage)
+	highestThreatPercentage = ThreatMeter:TestThreat("targettarget", highestThreatPercentage)
+	highestThreatPercentage = ThreatMeter:TestThreat("pettarget", highestThreatPercentage)
+	highestThreatPercentage = ThreatMeter:TestThreat("focustarget", highestThreatPercentage)
 	highestThreatPercentage = ThreatMeter:TestThreat("mouseover", highestThreatPercentage)
+	highestThreatPercentage = ThreatMeter:TestThreat("mouseovertarget", highestThreatPercentage)
 
 	if InCombatLockdown() then
 		local col = "|cff00ff00"
