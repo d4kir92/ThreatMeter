@@ -3,7 +3,7 @@
 ## Interface-Wrath: 30401
 ## Interface: 100100
 
-## Version: 0.1.6
+## Version: 0.2.0
 ## Title: ThreatMeter by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Author: D4KiR
@@ -14,4 +14,6 @@
 ## X-Wago-ID: j6jzz16R
 ## IconTexture: 132117
 
+libs\d4\d4.xml
+settings.lua
 core.lua
