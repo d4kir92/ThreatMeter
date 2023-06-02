@@ -1,21 +1,5 @@
-local AddOnName, ThreatMeter = ...
+local _, ThreatMeter = ...
 local DEBUG = false
-local COLR = "|cffff0000"
-local COLY = "|cffffff00"
-local COLG = "|cff00ff00"
-local COLADDON = "|cffff6060"
-
-function ThreatMeter:MSG(...)
-	print(format("[%s" .. AddOnName .. "|r] %s", COLADDON, COLG), ...)
-end
-
-function ThreatMeter:DEB(...)
-	print(format("[%s" .. AddOnName .. "|r] [%sDEBUG|r] %s", COLADDON, COLY, COLY), ...)
-end
-
-function ThreatMeter:ERR(...)
-	print(format("[%s" .. AddOnName .. "|r] %s", COLADDON, COLR), ...)
-end
 
 if DEBUG then
 	ThreatMeter:DEB("> DEBUG IS ON")
@@ -88,9 +72,50 @@ function ThreatMeter:UpdateHighestThreatPercentage()
 end
 
 function ThreatMeter:CreateFrame()
-	self.frame = CreateFrame("Frame", nil, UIParent)
+	self.frame = CreateFrame("Frame", "TMFrame", UIParent)
 	self.frame:SetSize(200, 20)
 	self.frame:SetPoint("CENTER", 0, 200)
+	self.frame:SetClampedToScreen(true)
+	self.frame:EnableMouse(true)
+	self.frame:RegisterForDrag("LeftButton")
+
+	if ThreatMeter:GetValue("lockedText", true) then
+		self.frame:SetMovable(false)
+	else
+		self.frame:SetMovable(true)
+	end
+
+	self.frame:SetScript("OnDragStart", function(sel)
+		if not InCombatLockdown() and sel:IsMovable() then
+			ThreatMeter:ShowGrid(sel)
+			sel:StartMoving()
+		else
+			if InCombatLockdown() then
+				ThreatMeter:MSG("Can't be moved in Combat.")
+			elseif not sel:IsMovable() then
+				ThreatMeter:MSG("Text is locked. Unlock it at Minimap-Button.")
+			end
+		end
+	end)
+
+	self.frame:SetScript("OnDragStop", function(sel)
+		ThreatMeter:HideGrid(sel)
+		self.frame:StopMovingOrSizing()
+		local p1, _, p3, p4, p5 = self.frame:GetPoint()
+		p4 = ThreatMeter:Grid(p4)
+		p5 = ThreatMeter:Grid(p5)
+		ThreatMeter:SetPoint("TMFrame", p1, "UIParent", p3, p4, p5)
+		self.frame:ClearAllPoints()
+		self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
+	end)
+
+	local p1, p2, p3, p4, p5 = ThreatMeter:GetPoint("TMFrame")
+
+	if p1 then
+		self.frame:ClearAllPoints()
+		self.frame:SetPoint(p1, p2, p3, p4, p5)
+	end
+
 	self.text = self.frame:CreateFontString(nil, "OVERLAY")
 	self.text:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
 	self.text:SetPoint("CENTER", 0, 0)
@@ -106,7 +131,7 @@ function ThreatMeter:CreateFrame()
 	ThreatMeter:UpdateHighestThreatPercentage()
 end
 
-frame:SetScript("OnEvent", function(self, event, ...)
+frame:SetScript("OnEvent", function(sel, event, ...)
 	if event == "PLAYER_LOGIN" then
 		ThreatMeter:CreateFrame()
 	end
