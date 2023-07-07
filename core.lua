@@ -1,5 +1,6 @@
 local _, ThreatMeter = ...
 local DEBUG = false
+local enemyGuids = {}
 
 if DEBUG then
 	ThreatMeter:DEB("> DEBUG IS ON")
@@ -8,63 +9,92 @@ end
 local frame = CreateFrame("Frame", "ThreatMeterFrame", UIParent)
 frame:RegisterEvent("PLAYER_LOGIN")
 
+function ThreatMeter:UnitGUID(unit)
+	if UnitExists(unit) and UnitIsEnemy("player", unit) then return UnitGUID(unit) end
+
+	return nil
+end
+
 function ThreatMeter:UnitThreat(unit)
 	if UnitExists(unit) then return select(3, UnitDetailedThreatSituation("player", unit)) end
 
-	return 0
+	return nil
 end
 
-function ThreatMeter:TestThreat(unit, highestThreatPercentage)
+function ThreatMeter:TestThreat(unit, highestTP, lowestTP, enemyCount)
 	local threatPercentage = ThreatMeter:UnitThreat(unit)
+	local enemyGuid = ThreatMeter:UnitGUID(unit, threatPercentage)
 
-	if threatPercentage and threatPercentage > highestThreatPercentage then
-		highestThreatPercentage = threatPercentage
+	if threatPercentage then
+		if threatPercentage > highestTP then
+			highestTP = threatPercentage
+		end
+
+		if threatPercentage < lowestTP then
+			lowestTP = threatPercentage
+		end
+
+		if enemyGuid ~= nil and not tContains(enemyGuids, enemyGuid) then
+			tinsert(enemyGuids, enemyGuid)
+			enemyCount = enemyCount + 1
+		end
 	end
 
-	return highestThreatPercentage
+	return highestTP, lowestTP, enemyCount
 end
 
-function ThreatMeter:UpdateHighestThreatPercentage()
-	local highestThreatPercentage = 0
+function ThreatMeter:UpdateThreat()
+	wipe(enemyGuids)
+	local highestTP = 0
+	local lowestTP = 100
+	local enemyCount = 0
 
 	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
-		highestThreatPercentage = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestThreatPercentage)
+		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestTP, lowestTP, enemyCount)
 	end
 
 	for i = 1, 8 do
-		highestThreatPercentage = ThreatMeter:TestThreat("boss" .. i, highestThreatPercentage)
+		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("boss" .. i, highestTP, lowestTP, enemyCount)
 	end
 
 	for i = 1, 4 do
-		highestThreatPercentage = ThreatMeter:TestThreat("party" .. i .. "target", highestThreatPercentage)
-		highestThreatPercentage = ThreatMeter:TestThreat("partypet" .. i .. "target", highestThreatPercentage)
+		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("party" .. i .. "target", highestTP, lowestTP, enemyCount)
+		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("partypet" .. i .. "target", highestTP, lowestTP, enemyCount)
 	end
 
 	for i = 1, 40 do
-		highestThreatPercentage = ThreatMeter:TestThreat("raid" .. i .. "target", highestThreatPercentage)
-		highestThreatPercentage = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestThreatPercentage)
+		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("raid" .. i .. "target", highestTP, lowestTP, enemyCount)
+		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestTP, lowestTP, enemyCount)
 	end
 
-	highestThreatPercentage = ThreatMeter:TestThreat("target", highestThreatPercentage)
-	highestThreatPercentage = ThreatMeter:TestThreat("targettarget", highestThreatPercentage)
-	highestThreatPercentage = ThreatMeter:TestThreat("pettarget", highestThreatPercentage)
-	highestThreatPercentage = ThreatMeter:TestThreat("focustarget", highestThreatPercentage)
-	highestThreatPercentage = ThreatMeter:TestThreat("mouseover", highestThreatPercentage)
-	highestThreatPercentage = ThreatMeter:TestThreat("mouseovertarget", highestThreatPercentage)
+	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("target", highestTP, lowestTP, enemyCount)
+	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("targettarget", highestTP, lowestTP, enemyCount)
+	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("pettarget", highestTP, lowestTP, enemyCount)
+	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP, enemyCount)
+	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP, enemyCount)
+	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP, enemyCount)
 
 	if InCombatLockdown() then
 		local col = "|cff00ff00"
 
-		if highestThreatPercentage >= 100 then
+		if highestTP >= 100 then
 			col = "|cffff0000"
-		elseif highestThreatPercentage >= 67 then
+		elseif highestTP >= 67 then
 			col = "|cffffff00"
 		end
 
-		if highestThreatPercentage <= 0 then
-			self.text:SetText("|cffffff00IN COMBAT")
+		local enemyText = ""
+
+		if enemyCount > 0 then
+			enemyText = " (" .. enemyCount .. ")"
+		end
+
+		if highestTP <= 0 then
+			self.text:SetText("|cffffff00IN COMBAT" .. enemyText)
+		elseif highestTP == 100 and lowestTP == 100 then
+			self.text:SetText(format("%s%s", col, "TANKING") .. enemyText)
 		else
-			self.text:SetText(format("%s%0.1f%%", col, highestThreatPercentage))
+			self.text:SetText(format("%s%0.1f%% - %0.1f%%", col, lowestTP, highestTP) .. enemyText)
 		end
 	elseif not InCombatLockdown() then
 		self.text:SetText("|cff00ff00NOT IN COMBAT")
@@ -125,10 +155,10 @@ function ThreatMeter:CreateFrame()
 	self.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 	self.frame:SetScript("OnEvent", function(sel, event, ...)
-		ThreatMeter:UpdateHighestThreatPercentage()
+		ThreatMeter:UpdateThreat()
 	end)
 
-	ThreatMeter:UpdateHighestThreatPercentage()
+	ThreatMeter:UpdateThreat()
 end
 
 frame:SetScript("OnEvent", function(sel, event, ...)
