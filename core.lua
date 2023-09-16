@@ -93,8 +93,10 @@ function ThreatMeter:UpdateThreat()
 			self.text:SetText("|cffffff00IN COMBAT" .. enemyText)
 		elseif highestTP == 100 and lowestTP == 100 then
 			self.text:SetText(format("%s%s", col, "TANKING") .. enemyText)
-		else
+		elseif lowestTP ~= highestTP then
 			self.text:SetText(format("%s%0.1f%% - %0.1f%%", col, lowestTP, highestTP) .. enemyText)
+		else
+			self.text:SetText(format("%s%0.1f%%", col, highestTP) .. enemyText)
 		end
 	elseif not InCombatLockdown() then
 		self.text:SetText("|cff00ff00NOT IN COMBAT")
