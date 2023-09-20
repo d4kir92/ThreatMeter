@@ -1,13 +1,9 @@
 local _, ThreatMeter = ...
 local DEBUG = false
 local enemyGuids = {}
-
 if DEBUG then
 	ThreatMeter:DEB("> DEBUG IS ON")
 end
-
-local frame = CreateFrame("Frame", "ThreatMeterFrame", UIParent)
-frame:RegisterEvent("PLAYER_LOGIN")
 
 function ThreatMeter:UnitGUID(unit)
 	if UnitExists(unit) and UnitIsEnemy("player", unit) then return UnitGUID(unit) end
@@ -24,7 +20,6 @@ end
 function ThreatMeter:TestThreat(unit, highestTP, lowestTP, enemyCount)
 	local threatPercentage = ThreatMeter:UnitThreat(unit)
 	local enemyGuid = ThreatMeter:UnitGUID(unit, threatPercentage)
-
 	if threatPercentage then
 		if threatPercentage > highestTP then
 			highestTP = threatPercentage
@@ -48,7 +43,6 @@ function ThreatMeter:UpdateThreat()
 	local highestTP = 0
 	local lowestTP = 100
 	local enemyCount = 0
-
 	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
 		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestTP, lowestTP, enemyCount)
 	end
@@ -73,10 +67,8 @@ function ThreatMeter:UpdateThreat()
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP, enemyCount)
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP, enemyCount)
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP, enemyCount)
-
 	if InCombatLockdown() then
 		local col = "|cff00ff00"
-
 		if highestTP >= 100 then
 			col = "|cffff0000"
 		elseif highestTP >= 67 then
@@ -84,7 +76,6 @@ function ThreatMeter:UpdateThreat()
 		end
 
 		local enemyText = ""
-
 		if enemyCount > 0 then
 			enemyText = " (" .. enemyCount .. ")"
 		end
@@ -110,39 +101,43 @@ function ThreatMeter:CreateFrame()
 	self.frame:SetClampedToScreen(true)
 	self.frame:EnableMouse(true)
 	self.frame:RegisterForDrag("LeftButton")
-
 	if ThreatMeter:GetValue("lockedText", true) then
 		self.frame:SetMovable(false)
 	else
 		self.frame:SetMovable(true)
 	end
 
-	self.frame:SetScript("OnDragStart", function(sel)
-		if not InCombatLockdown() and sel:IsMovable() then
-			ThreatMeter:ShowGrid(sel)
-			sel:StartMoving()
-		else
-			if InCombatLockdown() then
-				ThreatMeter:MSG("Can't be moved in Combat.")
-			elseif not sel:IsMovable() then
-				ThreatMeter:MSG("Text is locked. Unlock it at Minimap-Button.")
+	self.frame:SetScript(
+		"OnDragStart",
+		function(sel)
+			if not InCombatLockdown() and sel:IsMovable() then
+				ThreatMeter:ShowGrid(sel)
+				sel:StartMoving()
+			else
+				if InCombatLockdown() then
+					ThreatMeter:MSG("Can't be moved in Combat.")
+				elseif not sel:IsMovable() then
+					ThreatMeter:MSG("Text is locked. Unlock it at Minimap-Button.")
+				end
 			end
 		end
-	end)
+	)
 
-	self.frame:SetScript("OnDragStop", function(sel)
-		ThreatMeter:HideGrid(sel)
-		self.frame:StopMovingOrSizing()
-		local p1, _, p3, p4, p5 = self.frame:GetPoint()
-		p4 = ThreatMeter:Grid(p4)
-		p5 = ThreatMeter:Grid(p5)
-		ThreatMeter:SetPoint("TMFrame", p1, "UIParent", p3, p4, p5)
-		self.frame:ClearAllPoints()
-		self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
-	end)
+	self.frame:SetScript(
+		"OnDragStop",
+		function(sel)
+			ThreatMeter:HideGrid(sel)
+			self.frame:StopMovingOrSizing()
+			local p1, _, p3, p4, p5 = self.frame:GetPoint()
+			p4 = ThreatMeter:Grid(p4)
+			p5 = ThreatMeter:Grid(p5)
+			ThreatMeter:SetPoint("TMFrame", p1, "UIParent", p3, p4, p5)
+			self.frame:ClearAllPoints()
+			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
+		end
+	)
 
 	local p1, p2, p3, p4, p5 = ThreatMeter:GetPoint("TMFrame")
-
 	if p1 then
 		self.frame:ClearAllPoints()
 		self.frame:SetPoint(p1, p2, p3, p4, p5)
@@ -155,16 +150,23 @@ function ThreatMeter:CreateFrame()
 	self.frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 	self.frame:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
 	self.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-
-	self.frame:SetScript("OnEvent", function(sel, event, ...)
-		ThreatMeter:UpdateThreat()
-	end)
+	self.frame:SetScript(
+		"OnEvent",
+		function(sel, event, ...)
+			ThreatMeter:UpdateThreat()
+		end
+	)
 
 	ThreatMeter:UpdateThreat()
 end
 
-frame:SetScript("OnEvent", function(sel, event, ...)
-	if event == "PLAYER_LOGIN" then
-		ThreatMeter:CreateFrame()
+local frame = CreateFrame("Frame", "ThreatMeterFrame", UIParent)
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:SetScript(
+	"OnEvent",
+	function(sel, event, ...)
+		if event == "PLAYER_LOGIN" then
+			ThreatMeter:CreateFrame()
+		end
 	end
-end)
+)
