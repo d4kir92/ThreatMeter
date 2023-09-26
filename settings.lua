@@ -1,18 +1,18 @@
 local _, ThreatMeter = ...
 function ThreatMeter:ToggleSettings()
-	ThreatMeter:MSG("Settings Soon")
-	ThreatMeter:MSG("/tm mm - toggles minimap")
+	D4:MSG("ThreatMeter", 132117, "Settings Soon")
+	D4:MSG("ThreatMeter", 132117, "/tm mm - toggles minimap")
 end
 
 function ThreatMeter:ToggleFrame()
 	if self.frame then
-		ThreatMeter:SetValue("lockedText", not ThreatMeter:GetValue("lockedText", true))
-		if ThreatMeter:GetValue("lockedText", true) then
+		D4:SV(TMTAB, "lockedText", not D4:GV(TMTAB, "lockedText", true))
+		if D4:GV(TMTAB, "lockedText", true) then
 			self.frame:SetMovable(false)
-			ThreatMeter:MSG("Text is now locked.")
+			D4:MSG("ThreatMeter", 132117, "Text is now locked.")
 		else
 			self.frame:SetMovable(true)
-			ThreatMeter:MSG("Text is now unlocked.")
+			D4:MSG("ThreatMeter", 132117, "Text is now unlocked.")
 		end
 	else
 		C_Timer.After(
@@ -44,55 +44,48 @@ frame:SetScript(
 	function(self, event, ...)
 		if event == "PLAYER_LOGIN" then
 			TMTAB = TMTAB or {}
-			ThreatMeter:SetDBTable("TMTAB")
-			ThreatMeter:AddSlash(
-				"tm",
-				function()
-					ThreatMeter:ToggleSettings()
-				end
-			)
-
-			ThreatMeter:AddSlash(
-				"threatmeter",
-				function()
-					ThreatMeter:ToggleSettings()
-				end
-			)
-
-			ThreatMeter:AddSlash(
+			D4:AddSlash("tm", ThreatMeter.ToggleSettings)
+			D4:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
+			D4:AddSlash(
 				"tm mm",
 				function()
-					ThreatMeter:SetValue("showMMBtn", not ThreatMeter:GetValue("showMMBtn", true))
-					if ThreatMeter:GetValue("showMMBtn", true) then
-						ThreatMeter:ShowMMBtn()
+					D4:SV(TMTAB, "showMMBtn", not D4:GV(TMTAB, "showMMBtn", true))
+					if D4:GV(TMTAB, "showMMBtn", true) then
+						D4:ShowMMBtn("ThreatMeter")
+						D4:MSG("ThreatMeter", 132117, "Minimap Button is now shown.")
 					else
-						ThreatMeter:HideMMBtn()
+						D4:HideMMBtn("ThreatMeter")
+						D4:MSG("ThreatMeter", 132117, "Minimap Button is now hidden.")
 					end
 				end
 			)
 
-			ThreatMeter:CreateMinimapButton(
-				TMTAB,
-				"ThreatMeterMMBTN",
-				132117,
-				{"ThreatMeter", "Leftclick - Open Settings (Soon)", "Rightclick - Unlock/lock Text", "Shift + Rightclick - Hide Minimap Icon"},
-				function()
-					ThreatMeter:ToggleSettings()
-				end,
-				function()
-					ThreatMeter:ToggleFrame()
-				end,
-				function() end,
-				function()
-					ThreatMeter:SetValue("showMMBtn", false)
-				end
+			local mmbtn = nil
+			D4:CreateMinimapButton(
+				{
+					["name"] = "ThreatMeter",
+					["icon"] = 132117,
+					["var"] = mmbtn,
+					["dbtab"] = TMTAB,
+					["vTT"] = {"ThreatMeter", "Leftclick: Open Settings (Soon)", "Rightclick - Unlock/lock Text", "Shift + Rightclick - Hide Minimap Icon"},
+					["funcL"] = function()
+						ThreatMeter:ToggleSettings()
+					end,
+					["funcR"] = function()
+						ThreatMeter:ToggleFrame()
+					end,
+					["funcSR"] = function()
+						D4:SV(TMTAB, "showMMBtn", false)
+						D4:MSG("ThreatMeter", 132117, "Minimap Button is now hidden.")
+						D4:HideMMBtn("ThreatMeter")
+					end,
+				}
 			)
 
-			--ThreatMeter:SetValue("showMMBtn", false)
-			if ThreatMeter:GetValue("showMMBtn", true) then
-				ThreatMeter:ShowMMBtn()
+			if D4:GV(TMTAB, "showMMBtn", true) then
+				D4:ShowMMBtn("ThreatMeter")
 			else
-				ThreatMeter:HideMMBtn()
+				D4:HideMMBtn("ThreatMeter")
 			end
 		end
 	end

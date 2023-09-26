@@ -99,9 +99,8 @@ function ThreatMeter:CreateFrame()
 	self.frame:SetSize(200, 20)
 	self.frame:SetPoint("CENTER", 0, 200)
 	self.frame:SetClampedToScreen(true)
-	self.frame:EnableMouse(true)
 	self.frame:RegisterForDrag("LeftButton")
-	if ThreatMeter:GetValue("lockedText", true) then
+	if D4:GV(TMTAB, "lockedText", true) then
 		self.frame:SetMovable(false)
 	else
 		self.frame:SetMovable(true)
@@ -111,13 +110,13 @@ function ThreatMeter:CreateFrame()
 		"OnDragStart",
 		function(sel)
 			if not InCombatLockdown() and sel:IsMovable() then
-				ThreatMeter:ShowGrid(sel)
+				D4:ShowGrid(sel)
 				sel:StartMoving()
 			else
 				if InCombatLockdown() then
-					ThreatMeter:MSG("Can't be moved in Combat.")
+					D4:MSG("ThreatMeter", 132117, "Can't be moved in Combat.")
 				elseif not sel:IsMovable() then
-					ThreatMeter:MSG("Text is locked. Unlock it at Minimap-Button.")
+					D4:MSG("ThreatMeter", 132117, "Text is locked. Unlock it at Minimap-Button.")
 				end
 			end
 		end
@@ -126,18 +125,18 @@ function ThreatMeter:CreateFrame()
 	self.frame:SetScript(
 		"OnDragStop",
 		function(sel)
-			ThreatMeter:HideGrid(sel)
+			D4:HideGrid(sel)
 			self.frame:StopMovingOrSizing()
 			local p1, _, p3, p4, p5 = self.frame:GetPoint()
-			p4 = ThreatMeter:Grid(p4)
-			p5 = ThreatMeter:Grid(p5)
-			ThreatMeter:SetPoint("TMFrame", p1, "UIParent", p3, p4, p5)
+			p4 = D4:Grid(p4)
+			p5 = D4:Grid(p5)
+			D4:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
 			self.frame:ClearAllPoints()
 			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
 		end
 	)
 
-	local p1, p2, p3, p4, p5 = ThreatMeter:GetPoint("TMFrame")
+	local p1, p2, p3, p4, p5 = unpack(D4:GV(TMTAB, "TMFrame", {}))
 	if p1 then
 		self.frame:ClearAllPoints()
 		self.frame:SetPoint(p1, p2, p3, p4, p5)
@@ -150,12 +149,24 @@ function ThreatMeter:CreateFrame()
 	self.frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
 	self.frame:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
 	self.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+	self.frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self.frame:SetScript(
 		"OnEvent",
 		function(sel, event, ...)
 			ThreatMeter:UpdateThreat()
+			if event == "PLAYER_REGEN_ENABLED" then
+				self.frame:EnableMouse(true)
+			elseif event == "PLAYER_REGEN_DISABLED" then
+				self.frame:EnableMouse(false)
+			end
 		end
 	)
+
+	if InCombatLockdown() then
+		self.frame:EnableMouse(false)
+	else
+		self.frame:EnableMouse(true)
+	end
 
 	ThreatMeter:UpdateThreat()
 end
