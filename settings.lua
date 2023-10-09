@@ -9,9 +9,11 @@ function ThreatMeter:ToggleFrame()
 		D4:SV(TMTAB, "lockedText", not D4:GV(TMTAB, "lockedText", true))
 		if D4:GV(TMTAB, "lockedText", true) then
 			self.frame:SetMovable(false)
+			self.frame:EnableMouse(false)
 			D4:MSG("ThreatMeter", 132117, "Text is now locked.")
 		else
 			self.frame:SetMovable(true)
+			self.frame:EnableMouse(true)
 			D4:MSG("ThreatMeter", 132117, "Text is now unlocked.")
 		end
 	else

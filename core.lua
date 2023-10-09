@@ -102,14 +102,16 @@ function ThreatMeter:CreateFrame()
 	self.frame:RegisterForDrag("LeftButton")
 	if D4:GV(TMTAB, "lockedText", true) then
 		self.frame:SetMovable(false)
+		self.frame:EnableMouse(false)
 	else
 		self.frame:SetMovable(true)
+		self.frame:EnableMouse(true)
 	end
 
 	self.frame:SetScript(
 		"OnDragStart",
 		function(sel)
-			if not InCombatLockdown() and sel:IsMovable() then
+			if not D4:GV(TMTAB, "lockedText", true) and not InCombatLockdown() and sel:IsMovable() then
 				D4:ShowGrid(sel)
 				sel:StartMoving()
 			else
@@ -154,19 +156,8 @@ function ThreatMeter:CreateFrame()
 		"OnEvent",
 		function(sel, event, ...)
 			ThreatMeter:UpdateThreat()
-			if event == "PLAYER_REGEN_ENABLED" then
-				self.frame:EnableMouse(true)
-			elseif event == "PLAYER_REGEN_DISABLED" then
-				self.frame:EnableMouse(false)
-			end
 		end
 	)
-
-	if InCombatLockdown() then
-		self.frame:EnableMouse(false)
-	else
-		self.frame:EnableMouse(true)
-	end
 
 	ThreatMeter:UpdateThreat()
 end
