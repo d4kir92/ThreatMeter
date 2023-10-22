@@ -133,6 +133,7 @@ function ThreatMeter:CreateFrame()
 			p4 = D4:Grid(p4)
 			p5 = D4:Grid(p5)
 			D4:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
+			D4:MSG("ThreatMeter", 132117, "Saved new Text Position.")
 			self.frame:ClearAllPoints()
 			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
 		end
