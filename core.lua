@@ -67,6 +67,10 @@ function ThreatMeter:UpdateThreat()
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP, enemyCount)
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP, enemyCount)
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP, enemyCount)
+	if TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] == nil then
+		TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] = true
+	end
+
 	if InCombatLockdown() then
 		local col = "|cff00ff00"
 		if highestTP >= 100 then
@@ -89,8 +93,10 @@ function ThreatMeter:UpdateThreat()
 		else
 			self.text:SetText(format("%s%0.1f%%", col, highestTP) .. enemyText)
 		end
-	elseif not InCombatLockdown() then
+	elseif not InCombatLockdown() and TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] then
 		self.text:SetText("|cff00ff00NOT IN COMBAT")
+	else
+		self.text:SetText("")
 	end
 end
 
@@ -162,14 +168,3 @@ function ThreatMeter:CreateFrame()
 
 	ThreatMeter:UpdateThreat()
 end
-
-local frame = CreateFrame("Frame", "ThreatMeterFrame", UIParent)
-frame:RegisterEvent("PLAYER_LOGIN")
-frame:SetScript(
-	"OnEvent",
-	function(sel, event, ...)
-		if event == "PLAYER_LOGIN" then
-			ThreatMeter:CreateFrame()
-		end
-	end
-)
