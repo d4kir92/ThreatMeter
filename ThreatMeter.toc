@@ -3,13 +3,13 @@
 ## Interface-Wrath: 30403
 ## Interface: 100107
 
-## Version: 0.3.8
+## Version: 0.3.9
 ## Title: ThreatMeter by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Author: D4KiR
 ## DefaultState: enabled
-## SavedVariables: HLATAB
-## SavedVariablesPerCharacter: HLATABPC
+## SavedVariables: TMTAB
+## SavedVariablesPerCharacter: TMTABPC
 ## X-Curse-Project-ID: 868151
 ## X-Wago-ID: j6jzz16R
 ## IconTexture: 132117
