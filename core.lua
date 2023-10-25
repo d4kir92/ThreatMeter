@@ -67,7 +67,7 @@ function ThreatMeter:UpdateThreat()
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP, enemyCount)
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP, enemyCount)
 	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP, enemyCount)
-	if TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] == nil then
+	if TMTAB and TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] == nil then
 		TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] = true
 	end
 
