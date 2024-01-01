@@ -1,4 +1,4 @@
-local _, ThreatMeter = ...
+local AddonName, ThreatMeter = ...
 function ThreatMeter:ToggleFrame()
 	if self.frame then
 		D4:SV(TMTAB, "lockedText", not D4:GV(TMTAB, "lockedText", true))
@@ -53,13 +53,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
+	D4:SetVersion(AddonName, 132117, "0.4.5")
 	tm_settings = D4:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.4")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.5")
 		}
 	)
 
