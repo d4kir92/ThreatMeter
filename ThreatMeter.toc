@@ -3,7 +3,7 @@
 ## Interface-Wrath: 30403
 ## Interface: 100205
 
-## Version: 0.4.12
+## Version: 0.4.13
 ## Title: ThreatMeter by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Author: D4KiR
