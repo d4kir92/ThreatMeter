@@ -1,5 +1,5 @@
 ## Interface: 30403
-## Version: 0.4.14
+## Version: 0.4.15
 ## Title: ThreatMeter |T132117:16:16:0:0|t by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Author: D4KiR
@@ -11,8 +11,8 @@
 
 libs\D4Lib\D4Lib.xml
 
-locale/enUS.lua
-locale/deDE.lua
+locale\enUS.lua
+locale\deDE.lua
 
 settings.lua
 core.lua
