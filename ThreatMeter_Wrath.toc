@@ -1,5 +1,5 @@
 ## Interface: 30403
-## Version: 0.4.24
+## Version: 0.4.25
 ## Title: ThreatMeter |T132117:16:16:0:0|t by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Author: D4KiR
