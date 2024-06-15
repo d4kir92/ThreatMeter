@@ -53,14 +53,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	D4:SetVersion(AddonName, 132117, "0.4.27")
+	D4:SetVersion(AddonName, 132117, "0.4.28")
 	tm_settings = D4:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.27")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.28")
 		}
 	)
 
