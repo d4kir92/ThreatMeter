@@ -1,10 +1,5 @@
 local _, ThreatMeter = ...
-local DEBUG = false
 local enemyGuids = {}
-if DEBUG then
-	ThreatMeter:DEB("> DEBUG IS ON")
-end
-
 function ThreatMeter:UnitGUID(unit)
 	if UnitExists(unit) and UnitIsEnemy("player", unit) then return UnitGUID(unit) end
 
