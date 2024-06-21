@@ -106,7 +106,7 @@ function ThreatMeter:CreateFrame()
 	self.frame:SetPoint("CENTER", 0, 200)
 	self.frame:SetClampedToScreen(true)
 	self.frame:RegisterForDrag("LeftButton")
-	if D4:GV(TMTAB, "lockedText", true) then
+	if ThreatMeter:GV(TMTAB, "lockedText", true) then
 		self.frame:SetMovable(false)
 		self.frame:EnableMouse(false)
 	else
@@ -117,14 +117,14 @@ function ThreatMeter:CreateFrame()
 	self.frame:SetScript(
 		"OnDragStart",
 		function(sel)
-			if not D4:GV(TMTAB, "lockedText", true) and not InCombatLockdown() and sel:IsMovable() then
-				D4:ShowGrid(sel)
+			if not ThreatMeter:GV(TMTAB, "lockedText", true) and not InCombatLockdown() and sel:IsMovable() then
+				ThreatMeter:ShowGrid(sel)
 				sel:StartMoving()
 			else
 				if InCombatLockdown() then
-					D4:MSG("ThreatMeter", 132117, "Can't be moved in Combat.")
+					ThreatMeter:MSG("Can't be moved in Combat.")
 				elseif not sel:IsMovable() then
-					D4:MSG("ThreatMeter", 132117, "Text is locked. Unlock it at Minimap-Button.")
+					ThreatMeter:MSG("Text is locked. Unlock it at Minimap-Button.")
 				end
 			end
 		end
@@ -133,19 +133,19 @@ function ThreatMeter:CreateFrame()
 	self.frame:SetScript(
 		"OnDragStop",
 		function(sel)
-			D4:HideGrid(sel)
+			ThreatMeter:HideGrid(sel)
 			self.frame:StopMovingOrSizing()
 			local p1, _, p3, p4, p5 = self.frame:GetPoint()
-			p4 = D4:Grid(p4)
-			p5 = D4:Grid(p5)
-			D4:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
-			D4:MSG("ThreatMeter", 132117, "Saved new Text Position.")
+			p4 = ThreatMeter:Grid(p4)
+			p5 = ThreatMeter:Grid(p5)
+			ThreatMeter:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
+			ThreatMeter:MSG("Saved new Text Position.")
 			self.frame:ClearAllPoints()
 			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
 		end
 	)
 
-	local p1, p2, p3, p4, p5 = unpack(D4:GV(TMTAB, "TMFrame", {}))
+	local p1, p2, p3, p4, p5 = unpack(ThreatMeter:GV(TMTAB, "TMFrame", {}))
 	if p1 then
 		self.frame:ClearAllPoints()
 		self.frame:SetPoint(p1, p2, p3, p4, p5)

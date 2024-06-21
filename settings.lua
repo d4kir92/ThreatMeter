@@ -1,15 +1,16 @@
 local AddonName, ThreatMeter = ...
+ThreatMeter:SetAddonOutput("ThreatMeter", 132117)
 function ThreatMeter:ToggleFrame()
 	if self.frame then
-		D4:SV(TMTAB, "lockedText", not D4:GV(TMTAB, "lockedText", true))
-		if D4:GV(TMTAB, "lockedText", true) then
+		ThreatMeter:SV(TMTAB, "lockedText", not ThreatMeter:GV(TMTAB, "lockedText", true))
+		if ThreatMeter:GV(TMTAB, "lockedText", true) then
 			self.frame:SetMovable(false)
 			self.frame:EnableMouse(false)
-			D4:MSG("ThreatMeter", 132117, "Text is now locked.")
+			ThreatMeter:MSG("Text is now locked.")
 		else
 			self.frame:SetMovable(true)
 			self.frame:EnableMouse(true)
-			D4:MSG("ThreatMeter", 132117, "Text is now unlocked.")
+			ThreatMeter:MSG("Text is now unlocked.")
 		end
 	else
 		C_Timer.After(
@@ -53,14 +54,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	D4:SetVersion(AddonName, 132117, "0.4.29")
-	tm_settings = D4:CreateFrame(
+	ThreatMeter:SetVersion(AddonName, 132117, "0.4.30")
+	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.29")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.30")
 		}
 	)
 
@@ -69,7 +70,7 @@ function ThreatMeter:InitSettings()
 		TMTAB["MMBTN"] = true
 	end
 
-	D4:AddCategory(
+	ThreatMeter:AddCategory(
 		{
 			["name"] = "LID_GENERAL",
 			["parent"] = tm_settings,
@@ -78,7 +79,7 @@ function ThreatMeter:InitSettings()
 	)
 
 	y = y - 15
-	D4:CreateCheckbox(
+	ThreatMeter:CreateCheckbox(
 		{
 			["name"] = "showMinimapButton",
 			["parent"] = tm_settings,
@@ -87,16 +88,16 @@ function ThreatMeter:InitSettings()
 			["funcV"] = function(sel, checked)
 				TMTAB["MMBTN"] = checked
 				if TMTAB["MMBTN"] then
-					D4:ShowMMBtn("ThreatMeter")
+					ThreatMeter:ShowMMBtn("ThreatMeter")
 				else
-					D4:HideMMBtn("ThreatMeter")
+					ThreatMeter:HideMMBtn("ThreatMeter")
 				end
 			end
 		}
 	)
 
 	y = y - 45
-	D4:AddCategory(
+	ThreatMeter:AddCategory(
 		{
 			["name"] = "LID_TEXT",
 			["parent"] = tm_settings,
@@ -109,7 +110,7 @@ function ThreatMeter:InitSettings()
 		TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] = true
 	end
 
-	D4:CreateCheckbox(
+	ThreatMeter:CreateCheckbox(
 		{
 			["name"] = "LID_SHOWTEXTOUTSIDEOFCOMBAT",
 			["parent"] = tm_settings,
@@ -123,7 +124,7 @@ function ThreatMeter:InitSettings()
 
 	y = y - 45
 	TMTAB["TEXTSCALE"] = TMTAB["TEXTSCALE"] or 1
-	D4:CreateSlider(
+	ThreatMeter:CreateSlider(
 		{
 			["name"] = "LID_TEXTSCALE",
 			["parent"] = tm_settings,
@@ -151,10 +152,10 @@ frame:SetScript(
 		if event == "PLAYER_LOGIN" then
 			ThreatMeter:InitSettings()
 			ThreatMeter:CreateFrame()
-			D4:AddSlash("tm", ThreatMeter.ToggleSettings)
-			D4:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
+			ThreatMeter:AddSlash("tm", ThreatMeter.ToggleSettings)
+			ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
 			local mmbtn = nil
-			D4:CreateMinimapButton(
+			ThreatMeter:CreateMinimapButton(
 				{
 					["name"] = "ThreatMeter",
 					["icon"] = 132117,
@@ -168,19 +169,19 @@ frame:SetScript(
 						ThreatMeter:ToggleFrame()
 					end,
 					["funcSR"] = function()
-						D4:SV(TMTAB, "showMMBtn", false)
-						D4:MSG("ThreatMeter", 132117, "Minimap Button is now hidden.")
-						D4:HideMMBtn("ThreatMeter")
+						ThreatMeter:SV(TMTAB, "showMMBtn", false)
+						ThreatMeter:MSG("Minimap Button is now hidden.")
+						ThreatMeter:HideMMBtn("ThreatMeter")
 					end,
 				}
 			)
 
 			TMTAB["TEXTSCALE"] = TMTAB["TEXTSCALE"] or 1
 			ThreatMeter:SetTextScale(TMTAB["TEXTSCALE"])
-			if D4:GV(TMTAB, "showMMBtn", true) then
-				D4:ShowMMBtn("ThreatMeter")
+			if ThreatMeter:GV(TMTAB, "showMMBtn", true) then
+				ThreatMeter:ShowMMBtn("ThreatMeter")
 			else
-				D4:HideMMBtn("ThreatMeter")
+				ThreatMeter:HideMMBtn("ThreatMeter")
 			end
 		end
 	end
