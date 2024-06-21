@@ -95,7 +95,7 @@ function ThreatMeter:UpdateThreat()
 	end
 end
 
-function ThreatMeter:CreateFrame()
+function ThreatMeter:CreateMainFrame()
 	self.frame = CreateFrame("Frame", "TMFrame", UIParent)
 	self.frame:SetSize(200, 20)
 	self.frame:SetPoint("CENTER", 0, 200)

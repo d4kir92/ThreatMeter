@@ -54,14 +54,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.4.31")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.4.32")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.31")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.32")
 		}
 	)
 
@@ -151,7 +151,7 @@ frame:SetScript(
 	function(self, event, ...)
 		if event == "PLAYER_LOGIN" then
 			ThreatMeter:InitSettings()
-			ThreatMeter:CreateFrame()
+			ThreatMeter:CreateMainFrame()
 			ThreatMeter:AddSlash("tm", ThreatMeter.ToggleSettings)
 			ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
 			local mmbtn = nil
