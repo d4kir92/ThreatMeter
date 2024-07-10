@@ -54,93 +54,56 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.4.32")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.4.33")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.32")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.33")
 		}
 	)
 
-	local y = -30
-	if TMTAB["MMBTN"] == nil then
-		TMTAB["MMBTN"] = true
-	end
-
-	ThreatMeter:AddCategory(
-		{
-			["name"] = "LID_GENERAL",
-			["parent"] = tm_settings,
-			["pTab"] = {"TOPLEFT", 10, y},
-		}
-	)
-
-	y = y - 15
-	ThreatMeter:CreateCheckbox(
-		{
-			["name"] = "showMinimapButton",
-			["parent"] = tm_settings,
-			["pTab"] = {"TOPLEFT", 10, y},
-			["value"] = TMTAB["MMBTN"],
-			["funcV"] = function(sel, checked)
-				TMTAB["MMBTN"] = checked
-				if TMTAB["MMBTN"] then
-					ThreatMeter:ShowMMBtn("ThreatMeter")
-				else
-					ThreatMeter:HideMMBtn("ThreatMeter")
-				end
+	tm_settings.SF = CreateFrame("ScrollFrame", "tm_settings_SF", tm_settings, "UIPanelScrollFrameTemplate")
+	tm_settings.SF:SetPoint("TOPLEFT", tm_settings, 8, -26)
+	tm_settings.SF:SetPoint("BOTTOMRIGHT", tm_settings, -32, 8)
+	tm_settings.SC = CreateFrame("Frame", "tm_settings_SC", tm_settings.SF)
+	tm_settings.SC:SetSize(tm_settings.SF:GetSize())
+	tm_settings.SC:SetPoint("TOPLEFT", tm_settings.SF, "TOPLEFT", 0, 0)
+	tm_settings.SF:SetScrollChild(tm_settings.SC)
+	local y = 0
+	ThreatMeter:SetAppendY(y)
+	ThreatMeter:SetAppendParent(tm_settings.SC)
+	ThreatMeter:SetAppendTab(TMTAB)
+	ThreatMeter:AppendCategory("GENERAL")
+	ThreatMeter:AppendCheckbox(
+		"MMBTN",
+		true,
+		function(sel, checked)
+			if checked then
+				ThreatMeter:ShowMMBtn("ThreatMeter")
+			else
+				ThreatMeter:HideMMBtn("ThreatMeter")
 			end
-		}
+		end
 	)
 
-	y = y - 45
-	ThreatMeter:AddCategory(
-		{
-			["name"] = "LID_TEXT",
-			["parent"] = tm_settings,
-			["pTab"] = {"TOPLEFT", 10, y},
-		}
-	)
-
-	y = y - 15
-	if TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] == nil then
-		TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] = true
-	end
-
-	ThreatMeter:CreateCheckbox(
-		{
-			["name"] = "LID_SHOWTEXTOUTSIDEOFCOMBAT",
-			["parent"] = tm_settings,
-			["pTab"] = {"TOPLEFT", 10, y},
-			["value"] = TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"],
-			["funcV"] = function(sel, checked)
-				TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] = checked
+	ThreatMeter:AppendCategory("TEXT")
+	ThreatMeter:AppendCheckbox("SHOWTEXTOUTSIDEOFCOMBAT", true)
+	ThreatMeter:AppendSlider(
+		"TEXTSCALE",
+		1,
+		0.4,
+		2,
+		0.1,
+		1,
+		function(sel, val)
+			if val then
+				TMTAB["TEXTSCALE"] = val
+				ThreatMeter:SetTextScale(val)
 			end
-		}
-	)
-
-	y = y - 45
-	TMTAB["TEXTSCALE"] = TMTAB["TEXTSCALE"] or 1
-	ThreatMeter:CreateSlider(
-		{
-			["name"] = "LID_TEXTSCALE",
-			["parent"] = tm_settings,
-			["sw"] = 400,
-			["pTab"] = {"TOPLEFT", 15, y},
-			["vmin"] = 0.4,
-			["vmax"] = 2.0,
-			["value"] = TMTAB["TEXTSCALE"],
-			["steps"] = 0.1,
-			["funcV"] = function(sel, val)
-				if val then
-					TMTAB["TEXTSCALE"] = val
-					ThreatMeter:SetTextScale(val)
-				end
-			end,
-		}
+		end
 	)
 end
 

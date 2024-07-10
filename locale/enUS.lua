@@ -1,7 +1,7 @@
 -- enUS English
 local _, ThreatMeter = ...
-ThreatMeter:AddTrans("enUS", "LID_GENERAL", "General")
-ThreatMeter:AddTrans("enUS", "LID_TEXT", "Text")
-ThreatMeter:AddTrans("enUS", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "Show Text outside of Combat")
-ThreatMeter:AddTrans("enUS", "LID_TEXTSCALE", "Text Scale")
-ThreatMeter:AddTrans("enUS", "showMinimapButton", "Show Minimap Button")
+ThreatMeter:AddTrans("enUS", "GENERAL", "General")
+ThreatMeter:AddTrans("enUS", "TEXT", "Text")
+ThreatMeter:AddTrans("enUS", "SHOWTEXTOUTSIDEOFCOMBAT", "Show Text outside of Combat")
+ThreatMeter:AddTrans("enUS", "TEXTSCALE", "Text Scale")
+ThreatMeter:AddTrans("enUS", "MMBTN", "Show Minimap Button")
