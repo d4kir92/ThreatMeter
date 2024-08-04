@@ -54,14 +54,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.4.34")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.4.35")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.34")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.35")
 		}
 	)
 
@@ -79,7 +79,7 @@ function ThreatMeter:InitSettings()
 	ThreatMeter:AppendCategory("GENERAL")
 	ThreatMeter:AppendCheckbox(
 		"MMBTN",
-		true,
+		ThreatMeter:GetWoWBuild() ~= "RETAIL",
 		function(sel, checked)
 			if checked then
 				ThreatMeter:ShowMMBtn("ThreatMeter")
@@ -117,35 +117,41 @@ frame:SetScript(
 			ThreatMeter:CreateMainFrame()
 			ThreatMeter:AddSlash("tm", ThreatMeter.ToggleSettings)
 			ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
-			local mmbtn = nil
-			ThreatMeter:CreateMinimapButton(
-				{
-					["name"] = "ThreatMeter",
-					["icon"] = 132117,
-					["var"] = mmbtn,
-					["dbtab"] = TMTAB,
-					["vTT"] = {"ThreatMeter", "Leftclick: Open Settings", "Rightclick - Unlock/lock Text", "Shift + Rightclick - Hide Minimap Icon"},
-					["funcL"] = function()
-						ThreatMeter:ToggleSettings()
-					end,
-					["funcR"] = function()
-						ThreatMeter:ToggleFrame()
-					end,
-					["funcSR"] = function()
-						ThreatMeter:SV(TMTAB, "showMMBtn", false)
-						ThreatMeter:MSG("Minimap Button is now hidden.")
+			C_Timer.After(
+				0,
+				function()
+					local mmbtn = nil
+					ThreatMeter:CreateMinimapButton(
+						{
+							["name"] = "ThreatMeter",
+							["icon"] = 132117,
+							["var"] = mmbtn,
+							["dbtab"] = TMTAB,
+							["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.4.35"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
+							["funcL"] = function()
+								ThreatMeter:ToggleSettings()
+							end,
+							["funcR"] = function()
+								ThreatMeter:ToggleFrame()
+							end,
+							["funcSR"] = function()
+								ThreatMeter:SV(TMTAB, "showMMBtn", false)
+								ThreatMeter:MSG("Minimap Button is now hidden.")
+								ThreatMeter:HideMMBtn("ThreatMeter")
+							end,
+						}
+					)
+
+					if ThreatMeter:GV(TMTAB, "showMMBtn", ThreatMeter:GetWoWBuild() ~= "RETAIL") then
+						ThreatMeter:ShowMMBtn("ThreatMeter")
+					else
 						ThreatMeter:HideMMBtn("ThreatMeter")
-					end,
-				}
+					end
+				end
 			)
 
 			TMTAB["TEXTSCALE"] = TMTAB["TEXTSCALE"] or 1
 			ThreatMeter:SetTextScale(TMTAB["TEXTSCALE"])
-			if ThreatMeter:GV(TMTAB, "showMMBtn", true) then
-				ThreatMeter:ShowMMBtn("ThreatMeter")
-			else
-				ThreatMeter:HideMMBtn("ThreatMeter")
-			end
 		end
 	end
 )
