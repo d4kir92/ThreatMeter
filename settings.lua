@@ -54,14 +54,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.4.36")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.4.37")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.36")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.37")
 		}
 	)
 
@@ -127,7 +127,7 @@ frame:SetScript(
 							["icon"] = 132117,
 							["var"] = mmbtn,
 							["dbtab"] = TMTAB,
-							["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.4.36"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
+							["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.4.37"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
 							["funcL"] = function()
 								ThreatMeter:ToggleSettings()
 							end,
