@@ -36,7 +36,7 @@ function ThreatMeter:SetPositon(x, y)
 end
 
 function ThreatMeter:SetTextScale(val)
-	if val then
+	if val and type(val) == "number" then
 		self.frame:SetScale(val)
 	end
 end
@@ -54,14 +54,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.4.45")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.5.0")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.4.45")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.0")
 		}
 	)
 
@@ -91,6 +91,7 @@ function ThreatMeter:InitSettings()
 
 	ThreatMeter:AppendCategory("TEXT")
 	ThreatMeter:AppendCheckbox("SHOWTEXTOUTSIDEOFCOMBAT", true)
+	ThreatMeter:AppendCheckbox("SHOWHIGHESTTHREAT", true)
 	ThreatMeter:AppendSlider(
 		"TEXTSCALE",
 		1,
@@ -124,7 +125,7 @@ frame:SetScript(
 					["icon"] = 132117,
 					["var"] = mmbtn,
 					["dbtab"] = TMTAB,
-					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.4.45"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
+					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.0"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
 					["funcL"] = function()
 						ThreatMeter:ToggleSettings()
 					end,
