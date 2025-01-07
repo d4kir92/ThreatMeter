@@ -86,7 +86,6 @@ function ThreatMeter:UpdateThreat()
 	local lowestTP = 100
 	local enemyCount = 0
 	local highestUnit = ""
-	local highestCount = 0
 	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
 		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestTP, lowestTP, enemyCount)
 	end
@@ -268,6 +267,13 @@ function ThreatMeter:UpdateThreat()
 		self.text:SetPoint("CENTER", 0, 0)
 		self.text2:SetText("")
 	end
+
+	C_Timer.After(
+		0.3,
+		function()
+			ThreatMeter:UpdateThreat()
+		end
+	)
 end
 
 function ThreatMeter:CreateMainFrame()
@@ -327,19 +333,5 @@ function ThreatMeter:CreateMainFrame()
 	self.text2 = self.frame:CreateFontString(nil, "OVERLAY")
 	self.text2:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
 	self.text2:SetPoint("CENTER", 0, 0)
-	self.frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-	self.frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-	self.frame:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
-	self.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-	self.frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-	self.frame:RegisterEvent("UNIT_COMBAT")
-	self.frame:RegisterEvent("UNIT_DAMAGE")
-	self.frame:SetScript(
-		"OnEvent",
-		function(sel, event, ...)
-			ThreatMeter:UpdateThreat()
-		end
-	)
-
 	ThreatMeter:UpdateThreat()
 end
