@@ -1,5 +1,4 @@
 local _, ThreatMeter = ...
-local enemyGuids = {}
 function ThreatMeter:UnitGUID(unit, target)
 	if target == nil then
 		target = "player"
@@ -20,13 +19,13 @@ function ThreatMeter:UnitThreat(unit, target)
 	return nil
 end
 
-function ThreatMeter:TestThreat(unit, highestTP, lowestTP, enemyCount, target)
+function ThreatMeter:TestThreat(unit, highestTP, lowestTP, target)
+	if not UnitExists(unit) then return highestTP, lowestTP end
 	if target == nil then
 		target = "player"
 	end
 
 	local threatPercentage = ThreatMeter:UnitThreat(unit, target)
-	local enemyGuid = ThreatMeter:UnitGUID(unit, target)
 	if threatPercentage then
 		if threatPercentage > highestTP then
 			highestTP = threatPercentage
@@ -35,14 +34,9 @@ function ThreatMeter:TestThreat(unit, highestTP, lowestTP, enemyCount, target)
 		if threatPercentage < lowestTP then
 			lowestTP = threatPercentage
 		end
-
-		if enemyGuid ~= nil and not tContains(enemyGuids, enemyGuid) then
-			tinsert(enemyGuids, enemyGuid)
-			enemyCount = enemyCount + 1
-		end
 	end
 
-	return highestTP, lowestTP, enemyCount
+	return highestTP, lowestTP
 end
 
 local otherUnits = {}
@@ -79,117 +73,49 @@ tinsert(targetUnits, "mouseover")
 tinsert(targetUnits, "mouseovertarget")
 local tabHighestTP = {}
 local tabLowestTP = {}
-local tabEnemyCount = {}
 function ThreatMeter:UpdateThreat()
-	wipe(enemyGuids)
 	local highestTP = 0
 	local lowestTP = 100
-	local enemyCount = 0
 	local highestUnit = ""
 	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
-		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestTP, lowestTP, enemyCount)
+		highestTP, lowestTP = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestTP, lowestTP)
 	end
 
 	for i = 1, 8 do
-		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("boss" .. i, highestTP, lowestTP, enemyCount)
+		highestTP, lowestTP = ThreatMeter:TestThreat("boss" .. i, highestTP, lowestTP)
 	end
 
 	for i = 1, 4 do
-		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("party" .. i .. "target", highestTP, lowestTP, enemyCount)
-		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("partypet" .. i .. "target", highestTP, lowestTP, enemyCount)
+		highestTP, lowestTP = ThreatMeter:TestThreat("party" .. i .. "target", highestTP, lowestTP)
+		highestTP, lowestTP = ThreatMeter:TestThreat("partypet" .. i .. "target", highestTP, lowestTP)
 	end
 
 	for i = 1, 40 do
-		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("raid" .. i .. "target", highestTP, lowestTP, enemyCount)
-		highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestTP, lowestTP, enemyCount)
+		highestTP, lowestTP = ThreatMeter:TestThreat("raid" .. i .. "target", highestTP, lowestTP)
+		highestTP, lowestTP = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestTP, lowestTP)
 	end
 
-	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("target", highestTP, lowestTP, enemyCount)
-	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("targettarget", highestTP, lowestTP, enemyCount)
-	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("pettarget", highestTP, lowestTP, enemyCount)
-	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP, enemyCount)
-	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP, enemyCount)
-	highestTP, lowestTP, enemyCount = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP, enemyCount)
-	local c = 0
-	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
-		if "player" ~= nameplate.UnitFrame.unit and UnitIsUnit(nameplate.UnitFrame.unit, "player") then
-			c = c + 1
-		end
-	end
-
-	for i, targetUnit in pairs(targetUnits) do
-		if "player" ~= targetUnit and UnitIsUnit(targetUnit, "player") then
-			c = c + 1
-		end
-	end
-
-	if enemyCount == 0 then
-		enemyCount = c
-	end
-
+	highestTP, lowestTP = ThreatMeter:TestThreat("target", highestTP, lowestTP)
+	highestTP, lowestTP = ThreatMeter:TestThreat("targettarget", highestTP, lowestTP)
+	highestTP, lowestTP = ThreatMeter:TestThreat("pettarget", highestTP, lowestTP)
+	highestTP, lowestTP = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP)
+	highestTP, lowestTP = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP)
+	highestTP, lowestTP = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP)
 	if TMTAB["SHOWHIGHESTTHREAT"] then
 		for x, unit in pairs(otherUnits) do
 			tabHighestTP[unit] = 0
 			tabLowestTP[unit] = 100
-			tabEnemyCount[unit] = 0
 			if UnitExists(unit) then
-				for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
-					tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				end
-
-				for i = 1, 8 do
-					tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("boss" .. i, tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				end
-
-				for i = 1, 4 do
-					tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("party" .. i .. "target", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-					tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("partypet" .. i .. "target", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				end
-
-				for i = 1, 40 do
-					tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("raid" .. i .. "target", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-					tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("raidpet" .. i .. "target", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				end
-
-				tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("targettarget", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("pettarget", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("focustarget", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("mouseover", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
-				tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit] = ThreatMeter:TestThreat("mouseovertarget", tabHighestTP[unit], tabLowestTP[unit], tabEnemyCount[unit], unit)
+				tabHighestTP[unit], tabLowestTP[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], unit)
 			end
 		end
 
 		local highestUnitTP = 0
-		local foundHighest = false
-		for i, unit in pairs(otherUnits) do
+		for x, unit in pairs(otherUnits) do
 			if UnitExists(unit) and highestUnitTP < tabHighestTP[unit] then
 				highestUnitTP = tabHighestTP[unit]
 				highestUnit = unit
 				foundHighest = true
-			end
-		end
-
-		for x, unit in pairs(otherUnits) do
-			c = 0
-			for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
-				if unit ~= nameplate.UnitFrame.unit and UnitIsUnit(nameplate.UnitFrame.unit, unit) then
-					c = c + 1
-				end
-			end
-
-			for i, targetUnit in pairs(targetUnits) do
-				if unit ~= targetUnit and UnitIsUnit(targetUnit, unit) then
-					c = c + 1
-				end
-			end
-
-			if tabEnemyCount[unit] == 0 then
-				tabEnemyCount[unit] = c
-			end
-
-			if c > highestUnitTP and not foundHighest then
-				highestUnit = unit
 			end
 		end
 	end
@@ -206,35 +132,25 @@ function ThreatMeter:UpdateThreat()
 			col = "|cffffff00"
 		end
 
-		local enemyText = ""
-		if enemyCount > 0 then
-			enemyText = " (" .. enemyCount .. ")"
-		end
-
 		if highestTP <= 0 then
-			self.text:SetText("|cffffff00" .. ThreatMeter:Trans("INCOMBAT") .. enemyText)
+			self.text:SetText("|cffffff00" .. ThreatMeter:Trans("INCOMBAT"))
 		elseif highestTP == 100 and lowestTP == 100 then
-			self.text:SetText(format("%s%s", col, ThreatMeter:Trans("TANKING")) .. enemyText)
+			self.text:SetText(format("%s%s", col, ThreatMeter:Trans("TANKING")))
 		elseif lowestTP ~= highestTP then
-			self.text:SetText(format("%s%0.1f%% - %0.1f%%", col, lowestTP, highestTP) .. enemyText)
+			self.text:SetText(format("%s%0.1f%% - %0.1f%%", col, lowestTP, highestTP))
 		else
-			self.text:SetText(format("%s%0.1f%%", col, highestTP) .. enemyText)
+			self.text:SetText(format("%s%0.1f%%", col, highestTP))
 		end
 
 		if TMTAB["SHOWHIGHESTTHREAT"] and UnitExists(highestUnit) then
-			local enemyTextOther = ""
-			if tabEnemyCount[highestUnit] > 0 then
-				enemyTextOther = " (" .. tabEnemyCount[highestUnit] .. ")"
-			end
-
 			if tabHighestTP[highestUnit] <= 0 then
-				self.text2:SetText("|cffffff00" .. ThreatMeter:Trans("INCOMBAT") .. enemyTextOther)
+				self.text2:SetText("|cffffff00" .. ThreatMeter:Trans("INCOMBAT"))
 			elseif tabHighestTP[highestUnit] == 100 and tabLowestTP[highestUnit] == 100 then
-				self.text2:SetText(format("%s%s", col, ThreatMeter:Trans("TANKING")) .. enemyTextOther)
+				self.text2:SetText(format("%s%s", col, ThreatMeter:Trans("TANKING")))
 			elseif tabLowestTP[highestUnit] ~= tabHighestTP[highestUnit] then
-				self.text2:SetText(format("%s%0.1f%% - %0.1f%%", col, tabLowestTP[highestUnit], tabHighestTP[highestUnit]) .. enemyTextOther)
+				self.text2:SetText(format("%s%0.1f%% - %0.1f%%", col, tabLowestTP[highestUnit], tabHighestTP[highestUnit]))
 			else
-				self.text2:SetText(format("%s%0.1f%%", col, tabHighestTP[highestUnit]) .. enemyTextOther)
+				self.text2:SetText(format("%s%0.1f%%", col, tabHighestTP[highestUnit]))
 			end
 		else
 			self.text2:SetText("")
