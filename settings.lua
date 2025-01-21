@@ -3,15 +3,7 @@ ThreatMeter:SetAddonOutput("ThreatMeter", 132117)
 function ThreatMeter:ToggleFrame()
 	if self.frame then
 		ThreatMeter:SV(TMTAB, "lockedText", not ThreatMeter:GV(TMTAB, "lockedText", true))
-		if ThreatMeter:GV(TMTAB, "lockedText", true) then
-			self.frame:SetMovable(false)
-			self.frame:EnableMouse(false)
-			ThreatMeter:MSG("Text is now locked.")
-		else
-			self.frame:SetMovable(true)
-			self.frame:EnableMouse(true)
-			ThreatMeter:MSG("Text is now unlocked.")
-		end
+		ThreatMeter:ToggleText("ToggleFrame", true)
 	else
 		C_Timer.After(
 			1,
@@ -54,14 +46,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.5.2")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.5.3")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.2")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.3")
 		}
 	)
 
@@ -90,8 +82,6 @@ function ThreatMeter:InitSettings()
 	)
 
 	ThreatMeter:AppendCategory("TEXT")
-	ThreatMeter:AppendCheckbox("SHOWTEXTOUTSIDEOFCOMBAT", true)
-	ThreatMeter:AppendCheckbox("SHOWHIGHESTTHREAT", true)
 	ThreatMeter:AppendSlider(
 		"TEXTSCALE",
 		1,
@@ -106,6 +96,17 @@ function ThreatMeter:InitSettings()
 			end
 		end
 	)
+
+	ThreatMeter:AppendCheckbox(
+		"lockedText",
+		true,
+		function()
+			ThreatMeter:ToggleText("lockedText CheckBox", true)
+		end
+	)
+
+	ThreatMeter:AppendCheckbox("SHOWTEXTOUTSIDEOFCOMBAT", true)
+	ThreatMeter:AppendCheckbox("SHOWHIGHESTTHREAT", true)
 end
 
 local frame = CreateFrame("FRAME")
@@ -125,7 +126,7 @@ frame:SetScript(
 					["icon"] = 132117,
 					["var"] = mmbtn,
 					["dbtab"] = TMTAB,
-					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.2"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
+					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.3"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
 					["funcL"] = function()
 						ThreatMeter:ToggleSettings()
 					end,

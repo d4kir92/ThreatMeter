@@ -192,20 +192,33 @@ function ThreatMeter:UpdateThreat()
 	)
 end
 
-function ThreatMeter:CreateMainFrame()
-	self.frame = CreateFrame("Frame", "TMFrame", UIParent)
-	self.frame:SetSize(200, 20)
-	self.frame:SetPoint("CENTER", 0, 200)
-	self.frame:SetClampedToScreen(true)
-	self.frame:RegisterForDrag("LeftButton")
+function ThreatMeter:ToggleText(from, showMsg)
+	if showMsg == nil then
+		showMsg = false
+	end
+
 	if ThreatMeter:GV(TMTAB, "lockedText", true) then
 		self.frame:SetMovable(false)
 		self.frame:EnableMouse(false)
+		if showMsg then
+			ThreatMeter:MSG("Text is now locked.")
+		end
 	else
 		self.frame:SetMovable(true)
 		self.frame:EnableMouse(true)
+		if showMsg then
+			ThreatMeter:MSG("Text is now unlocked.")
+		end
 	end
+end
 
+function ThreatMeter:CreateMainFrame()
+	self.frame = CreateFrame("Frame", "TMFrame", UIParent)
+	self.frame:SetSize(240, 80)
+	self.frame:SetPoint("CENTER", 0, 200)
+	self.frame:SetClampedToScreen(true)
+	self.frame:RegisterForDrag("LeftButton")
+	ThreatMeter:ToggleText("CreateMainFrame", false)
 	self.frame:SetScript(
 		"OnDragStart",
 		function(sel)
@@ -249,5 +262,40 @@ function ThreatMeter:CreateMainFrame()
 	self.text2 = self.frame:CreateFontString(nil, "OVERLAY")
 	self.text2:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
 	self.text2:SetPoint("CENTER", 0, 0)
+	self.lockText = CreateFrame("Button", "lockText", self.frame)
+	self.lockText:SetText("")
+	self.lockText:SetSize(40, 40)
+	self.lockText:SetPoint("BOTTOMLEFT", self.frame, "BOTTOMRIGHT", 0, 0)
+	self.lockText:SetScript(
+		"OnClick",
+		function()
+			ThreatMeter:SV(TMTAB, "lockedText", true)
+			ThreatMeter:ToggleText("lock", true)
+		end
+	)
+
+	self.lockText.lock = self.lockText:CreateTexture("lockText" .. ".lock", "ARTWORK")
+	self.lockText.lock:SetTexture("Interface\\Buttons\\LockButton-Locked-Up")
+	self.lockText.lock:SetAllPoints(self.lockText)
+	self.lockText.text = self.lockText:CreateFontString(nil, "OVERLAY")
+	self.lockText.text:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+	self.lockText.text:SetPoint("LEFT", self.lockText, "RIGHT", 0, 0)
+	self.lockText.text:SetText(ThreatMeter:Trans("ThreatMeterText"))
+	function ThreatMeter:UpdateLockButton()
+		if ThreatMeter:GV(TMTAB, "lockedText", true) then
+			self.lockText:Hide()
+		else
+			self.lockText:Show()
+		end
+
+		C_Timer.After(
+			0.4,
+			function()
+				ThreatMeter:UpdateLockButton()
+			end
+		)
+	end
+
+	ThreatMeter:UpdateLockButton()
 	ThreatMeter:UpdateThreat()
 end

@@ -9,3 +9,5 @@ ThreatMeter:AddTrans("enUS", "SHOWHIGHESTTHREAT", "Show Highest Threat (Other Pl
 ThreatMeter:AddTrans("enUS", "INCOMBAT", "In Combat")
 ThreatMeter:AddTrans("enUS", "NOTINCOMBAT", "Not In Combat")
 ThreatMeter:AddTrans("enUS", "TANKING", "Tanking")
+ThreatMeter:AddTrans("enUS", "lockedText", "Locked Text")
+ThreatMeter:AddTrans("enUS", "ThreatMeterText", "Click on the lock to lock the text position")
