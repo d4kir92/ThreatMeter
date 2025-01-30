@@ -201,13 +201,13 @@ function ThreatMeter:ToggleText(from, showMsg)
 		self.frame:SetMovable(false)
 		self.frame:EnableMouse(false)
 		if showMsg then
-			ThreatMeter:MSG((ThreatMeter:Trans("Text is now locked.")))
+			ThreatMeter:MSG(ThreatMeter:Trans("TEXTISNOWLOCKED"))
 		end
 	else
 		self.frame:SetMovable(true)
 		self.frame:EnableMouse(true)
 		if showMsg then
-			ThreatMeter:MSG((ThreatMeter:Trans("Text is now unlocked.")))
+			ThreatMeter:MSG(ThreatMeter:Trans("TEXTISNOWUNLOCKED"))
 		end
 	end
 end
@@ -227,9 +227,9 @@ function ThreatMeter:CreateMainFrame()
 				sel:StartMoving()
 			else
 				if InCombatLockdown() then
-					ThreatMeter:MSG((ThreatMeter:Trans("Can't be moved in Combat.")))
+					ThreatMeter:MSG(ThreatMeter:Trans("CANTBEMOVEDINCOMBAT"))
 				elseif not sel:IsMovable() then
-					ThreatMeter:MSG((ThreatMeter:Trans("Text is locked. Unlock it at Minimap-Button.")))
+					ThreatMeter:MSG(ThreatMeter:Trans("TEXTISLOCKEDHELPTEXT"))
 				end
 			end
 		end
@@ -244,7 +244,7 @@ function ThreatMeter:CreateMainFrame()
 			p4 = ThreatMeter:Grid(p4)
 			p5 = ThreatMeter:Grid(p5)
 			ThreatMeter:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
-			ThreatMeter:MSG((ThreatMeter:Trans("Saved new Text Position.")))
+			ThreatMeter:MSG(ThreatMeter:Trans("SAVEDNEWTEXTPOSITION"))
 			self.frame:ClearAllPoints()
 			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
 		end
@@ -256,11 +256,9 @@ function ThreatMeter:CreateMainFrame()
 		self.frame:SetPoint(p1, p2, p3, p4, p5)
 	end
 
-	self.text = self.frame:CreateFontString(nil, "OVERLAY")
-	self.text:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
+	self.text = self.frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	self.text:SetPoint("CENTER", 0, 0)
-	self.text2 = self.frame:CreateFontString(nil, "OVERLAY")
-	self.text2:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
+	self.text2 = self.frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	self.text2:SetPoint("CENTER", 0, 0)
 	self.lockText = CreateFrame("Button", "lockText", self.frame)
 	self.lockText:SetText("")
@@ -277,10 +275,18 @@ function ThreatMeter:CreateMainFrame()
 	self.lockText.lock = self.lockText:CreateTexture("lockText" .. ".lock", "ARTWORK")
 	self.lockText.lock:SetTexture("Interface\\Buttons\\LockButton-Locked-Up")
 	self.lockText.lock:SetAllPoints(self.lockText)
-	self.lockText.text = self.lockText:CreateFontString(nil, "OVERLAY")
-	self.lockText.text:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+	self.lockText.text = self.lockText:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	self.lockText.text:SetPoint("LEFT", self.lockText, "RIGHT", 0, 0)
 	self.lockText.text:SetText(ThreatMeter:Trans("ThreatMeterText"))
+	C_Timer.After(
+		0,
+		function()
+			ThreatMeter:SetFontSize(self.lockText.text, 14, "OUTLINE")
+			ThreatMeter:SetFontSize(self.text, 24, "OUTLINE")
+			ThreatMeter:SetFontSize(self.text2, 24, "OUTLINE")
+		end
+	)
+
 	function ThreatMeter:UpdateLockButton()
 		if ThreatMeter:GV(TMTAB, "lockedText", true) then
 			self.lockText:Hide()

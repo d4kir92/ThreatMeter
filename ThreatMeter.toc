@@ -4,7 +4,7 @@
 ## Interface-Cata: 40401
 ## Interface: 110007, 110100
 
-## Version: 0.5.4
+## Version: 0.5.5
 ## Title: ThreatMeter by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Notes-ruRU: ThreatMeter - Измеритель угрозы

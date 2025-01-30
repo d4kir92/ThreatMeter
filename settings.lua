@@ -46,14 +46,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.5.4")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.5.5")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.4")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.5")
 		}
 	)
 
@@ -126,7 +126,7 @@ frame:SetScript(
 					["icon"] = 132117,
 					["var"] = mmbtn,
 					["dbtab"] = TMTAB,
-					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.4"}, {(ThreatMeter:Trans("Leftclick")), (ThreatMeter:Trans("Open Settings"))}, {(ThreatMeter:Trans("Rightclick")), (ThreatMeter:Trans("Unlock/lock Text"))}, {(ThreatMeter:Trans("Shift + Rightclick")), (ThreatMeter:Trans("Hide Minimap Icon"))}},
+					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.5"}, {ThreatMeter:Trans("LEFTCLICK"), ThreatMeter:Trans("OPENSETTINGS")}, {ThreatMeter:Trans("RIGHTCLICK"), ThreatMeter:Trans("UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("SHIFTRIGHTCLICK"), ThreatMeter:Trans("HIDEMINIMAPICON")}},
 					["funcL"] = function()
 						ThreatMeter:ToggleSettings()
 					end,
@@ -135,7 +135,7 @@ frame:SetScript(
 					end,
 					["funcSR"] = function()
 						ThreatMeter:SV(TMTAB, "MMBTN", false)
-						ThreatMeter:MSG((ThreatMeter:Trans("Minimap Button is now hidden.")))
+						ThreatMeter:MSG(ThreatMeter:Trans("MINIMAPBUTTONISNOWHIDDEN"))
 						ThreatMeter:HideMMBtn("ThreatMeter")
 					end,
 				}
