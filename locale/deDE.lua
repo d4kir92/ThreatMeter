@@ -3,7 +3,7 @@ local _, ThreatMeter = ...
 ThreatMeter:AddTrans("deDE", "GENERAL", "Allgemein")
 ThreatMeter:AddTrans("deDE", "TEXT", "Text")
 ThreatMeter:AddTrans("deDE", "SHOWTEXTOUTSIDEOFCOMBAT", "Text außerhalb vom Kampf anzeigen")
-ThreatMeter:AddTrans("deDE", "TEXTSCALE", "Text Skalierung")
+ThreatMeter:AddTrans("deDE", "TEXTSCALE", "Text Skalierung: %0.1f")
 ThreatMeter:AddTrans("deDE", "MMBTN", "Minimap Knopf anzeigen")
 ThreatMeter:AddTrans("deDE", "SHOWHIGHESTTHREAT", "Höchste Bedrohung anzeigen (Andere Spieler)")
 ThreatMeter:AddTrans("deDE", "INCOMBAT", "Im Kampf")

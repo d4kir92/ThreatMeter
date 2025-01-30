@@ -4,7 +4,7 @@ local _, ThreatMeter = ...
 ThreatMeter:AddTrans("ruRU", "GENERAL", "Основное")
 ThreatMeter:AddTrans("ruRU", "TEXT", "Текст")
 ThreatMeter:AddTrans("ruRU", "SHOWTEXTOUTSIDEOFCOMBAT", "Показывать текст вне боя")
-ThreatMeter:AddTrans("ruRU", "TEXTSCALE", "Масштаб текста")
+ThreatMeter:AddTrans("ruRU", "TEXTSCALE", "Масштаб текста: %0.1f")
 ThreatMeter:AddTrans("ruRU", "MMBTN", "Показывать кнопку миникарты")
 ThreatMeter:AddTrans("ruRU", "SHOWHIGHESTTHREAT", "Показать наибольшую угрозу (другие игроки)")
 ThreatMeter:AddTrans("ruRU", "INCOMBAT", "В бою")
