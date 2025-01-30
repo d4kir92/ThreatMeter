@@ -126,7 +126,7 @@ frame:SetScript(
 					["icon"] = 132117,
 					["var"] = mmbtn,
 					["dbtab"] = TMTAB,
-					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.4"}, {"Leftclick", "Open Settings"}, {"Rightclick", "Unlock/lock Text"}, {"Shift + Rightclick", "Hide Minimap Icon"}},
+					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.4"}, {(ThreatMeter:Trans("Leftclick")), (ThreatMeter:Trans("Open Settings"))}, {(ThreatMeter:Trans("Rightclick")), (ThreatMeter:Trans("Unlock/lock Text"))}, {(ThreatMeter:Trans("Shift + Rightclick")), (ThreatMeter:Trans("Hide Minimap Icon"))}},
 					["funcL"] = function()
 						ThreatMeter:ToggleSettings()
 					end,
@@ -135,7 +135,7 @@ frame:SetScript(
 					end,
 					["funcSR"] = function()
 						ThreatMeter:SV(TMTAB, "MMBTN", false)
-						ThreatMeter:MSG("Minimap Button is now hidden.")
+						ThreatMeter:MSG((ThreatMeter:Trans("Minimap Button is now hidden.")))
 						ThreatMeter:HideMMBtn("ThreatMeter")
 					end,
 				}
