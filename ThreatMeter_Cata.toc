@@ -2,6 +2,7 @@
 ## Version: 0.5.4
 ## Title: ThreatMeter |T132117:16:16:0:0|t by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
+## Notes-ruRU: ThreatMeter - Измеритель угрозы
 ## Author: D4KiR
 ## DefaultState: enabled
 ## SavedVariables: TMTAB
@@ -13,6 +14,7 @@ libs\D4Lib\D4Lib.xml
 
 locale\enUS.lua
 locale\deDE.lua
+locale\ruRU.lua
 
 settings.lua
 core.lua

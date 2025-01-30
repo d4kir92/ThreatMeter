@@ -201,13 +201,13 @@ function ThreatMeter:ToggleText(from, showMsg)
 		self.frame:SetMovable(false)
 		self.frame:EnableMouse(false)
 		if showMsg then
-			ThreatMeter:MSG("Text is now locked.")
+			ThreatMeter:MSG((ThreatMeter:Trans("Text is now locked.")))
 		end
 	else
 		self.frame:SetMovable(true)
 		self.frame:EnableMouse(true)
 		if showMsg then
-			ThreatMeter:MSG("Text is now unlocked.")
+			ThreatMeter:MSG((ThreatMeter:Trans("Text is now unlocked.")))
 		end
 	end
 end
@@ -227,9 +227,9 @@ function ThreatMeter:CreateMainFrame()
 				sel:StartMoving()
 			else
 				if InCombatLockdown() then
-					ThreatMeter:MSG("Can't be moved in Combat.")
+					ThreatMeter:MSG((ThreatMeter:Trans("Can't be moved in Combat.")))
 				elseif not sel:IsMovable() then
-					ThreatMeter:MSG("Text is locked. Unlock it at Minimap-Button.")
+					ThreatMeter:MSG((ThreatMeter:Trans("Text is locked. Unlock it at Minimap-Button.")))
 				end
 			end
 		end
@@ -244,7 +244,7 @@ function ThreatMeter:CreateMainFrame()
 			p4 = ThreatMeter:Grid(p4)
 			p5 = ThreatMeter:Grid(p5)
 			ThreatMeter:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
-			ThreatMeter:MSG("Saved new Text Position.")
+			ThreatMeter:MSG((ThreatMeter:Trans("Saved new Text Position.")))
 			self.frame:ClearAllPoints()
 			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
 		end
