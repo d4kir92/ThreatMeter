@@ -46,14 +46,14 @@ end
 
 function ThreatMeter:InitSettings()
 	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.5.6")
+	ThreatMeter:SetVersion(AddonName, 132117, "0.5.7")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.6")
+			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.7")
 		}
 	)
 
@@ -126,7 +126,7 @@ frame:SetScript(
 					["icon"] = 132117,
 					["var"] = mmbtn,
 					["dbtab"] = TMTAB,
-					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.6"}, {ThreatMeter:Trans("LEFTCLICK"), ThreatMeter:Trans("OPENSETTINGS")}, {ThreatMeter:Trans("RIGHTCLICK"), ThreatMeter:Trans("UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("SHIFTRIGHTCLICK"), ThreatMeter:Trans("HIDEMINIMAPICON")}},
+					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.7"}, {ThreatMeter:Trans("LEFTCLICK"), ThreatMeter:Trans("OPENSETTINGS")}, {ThreatMeter:Trans("RIGHTCLICK"), ThreatMeter:Trans("UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("SHIFTRIGHTCLICK"), ThreatMeter:Trans("HIDEMINIMAPICON")}},
 					["funcL"] = function()
 						ThreatMeter:ToggleSettings()
 					end,
