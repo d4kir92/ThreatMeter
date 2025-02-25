@@ -45,15 +45,13 @@ function ThreatMeter:ToggleSettings()
 end
 
 function ThreatMeter:InitSettings()
-	TMTAB = TMTAB or {}
-	ThreatMeter:SetVersion(AddonName, 132117, "0.5.8")
 	tm_settings = ThreatMeter:CreateFrame(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
 			["sw"] = 520,
 			["sh"] = 520,
-			["title"] = format("ThreatMeter |T132117:16:16:0:0|t v|cff3FC7EB%s", "0.5.8")
+			["title"] = format("|T132117:16:16:0:0|t T|cff3FC7EBhreat|rM|cff3FC7EBeter|r v|cff3FC7EB%s", ThreatMeter:GetVersion())
 		}
 	)
 
@@ -115,6 +113,8 @@ frame:SetScript(
 	"OnEvent",
 	function(self, event, ...)
 		if event == "PLAYER_LOGIN" then
+			TMTAB = TMTAB or {}
+			ThreatMeter:SetVersion(132117, "0.5.9")
 			ThreatMeter:InitSettings()
 			ThreatMeter:CreateMainFrame()
 			ThreatMeter:AddSlash("tm", ThreatMeter.ToggleSettings)
@@ -126,7 +126,7 @@ frame:SetScript(
 					["icon"] = 132117,
 					["var"] = mmbtn,
 					["dbtab"] = TMTAB,
-					["vTT"] = {{"ThreatMeter |T132117:16:16:0:0|t", "v|cff3FC7EB0.5.8"}, {ThreatMeter:Trans("LEFTCLICK"), ThreatMeter:Trans("OPENSETTINGS")}, {ThreatMeter:Trans("RIGHTCLICK"), ThreatMeter:Trans("UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("SHIFTRIGHTCLICK"), ThreatMeter:Trans("HIDEMINIMAPICON")}},
+					["vTT"] = {{"|T132117:16:16:0:0|t T|cff3FC7EBhreat|rM|cff3FC7EBeter|r", "v|cff3FC7EB" .. ThreatMeter:GetVersion()}, {ThreatMeter:Trans("LID_LEFTCLICK"), ThreatMeter:Trans("LID_OPENSETTINGS")}, {ThreatMeter:Trans("LID_RIGHTCLICK"), ThreatMeter:Trans("UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("LID_SHIFTRIGHTCLICK"), ThreatMeter:Trans("LID_HIDEMINIMAPBUTTON")}},
 					["funcL"] = function()
 						ThreatMeter:ToggleSettings()
 					end,
