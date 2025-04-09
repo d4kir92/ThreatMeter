@@ -1,10 +1,10 @@
-## Interface-Classic: 11506
+## Interface-Classic: 11507
 ## Interface-BCC: 20504
 ## Interface-Wrath: 30403
 ## Interface-Cata: 40401, 40402
 ## Interface: 110007, 110100
 
-## Version: 0.5.10
+## Version: 0.5.11
 ## Title: T|cff3FC7EBhreat|rM|cff3FC7EBeter|r |T132117:16:16:0:0|t by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Notes-ruRU: ThreatMeter - Измеритель угрозы
