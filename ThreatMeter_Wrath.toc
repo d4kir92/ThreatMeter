@@ -1,5 +1,5 @@
 ## Interface: 30403
-## Version: 0.5.12
+## Version: 0.5.13
 ## Title: T|cff3FC7EBhreat|rM|cff3FC7EBeter|r |T132117:16:16:0:0|t by |cff3FC7EBD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Notes-ruRU: ThreatMeter - Измеритель угрозы
