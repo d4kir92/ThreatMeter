@@ -133,9 +133,9 @@ function ThreatMeter:UpdateThreat()
 		end
 
 		if highestTP <= 0 then
-			self.text:SetText("|cffffff00" .. ThreatMeter:Trans("INCOMBAT"))
+			self.text:SetText("|cffffff00" .. ThreatMeter:Trans("LID_INCOMBAT"))
 		elseif highestTP == 100 and lowestTP == 100 then
-			self.text:SetText(format("%s%s", col, ThreatMeter:Trans("TANKING")))
+			self.text:SetText(format("%s%s", col, ThreatMeter:Trans("LID_TANKING")))
 		elseif lowestTP ~= highestTP then
 			self.text:SetText(format("%s%0.1f%% - %0.1f%%", col, lowestTP, highestTP))
 		else
@@ -144,9 +144,9 @@ function ThreatMeter:UpdateThreat()
 
 		if TMTAB["SHOWHIGHESTTHREAT"] and UnitExists(highestUnit) then
 			if tabHighestTP[highestUnit] <= 0 then
-				self.text2:SetText("|cffffff00" .. ThreatMeter:Trans("INCOMBAT"))
+				self.text2:SetText("|cffffff00" .. ThreatMeter:Trans("LID_INCOMBAT"))
 			elseif tabHighestTP[highestUnit] == 100 and tabLowestTP[highestUnit] == 100 then
-				self.text2:SetText(format("%s%s", col, ThreatMeter:Trans("TANKING")))
+				self.text2:SetText(format("%s%s", col, ThreatMeter:Trans("LID_TANKING")))
 			elseif tabLowestTP[highestUnit] ~= tabHighestTP[highestUnit] then
 				self.text2:SetText(format("%s%0.1f%% - %0.1f%%", col, tabLowestTP[highestUnit], tabHighestTP[highestUnit]))
 			else
@@ -156,9 +156,9 @@ function ThreatMeter:UpdateThreat()
 			self.text2:SetText("")
 		end
 	elseif not InCombatLockdown() and TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] then
-		self.text:SetText("|cff00ff00" .. ThreatMeter:Trans("NOTINCOMBAT"))
+		self.text:SetText("|cff00ff00" .. ThreatMeter:Trans("LID_NOTINCOMBAT"))
 		if TMTAB["SHOWHIGHESTTHREAT"] then
-			self.text2:SetText("|cff00ff00" .. ThreatMeter:Trans("NOTINCOMBAT"))
+			self.text2:SetText("|cff00ff00" .. ThreatMeter:Trans("LID_NOTINCOMBAT"))
 		else
 			self.text2:SetText("")
 		end
@@ -183,13 +183,12 @@ function ThreatMeter:UpdateThreat()
 		self.text:SetPoint("CENTER", 0, 0)
 		self.text2:SetText("")
 	end
-
-	C_Timer.After(
+	--[[C_Timer.After(
 		0.3,
 		function()
 			ThreatMeter:UpdateThreat()
 		end
-	)
+	)]]
 end
 
 function ThreatMeter:ToggleText(from, showMsg)
@@ -201,13 +200,13 @@ function ThreatMeter:ToggleText(from, showMsg)
 		self.frame:SetMovable(false)
 		self.frame:EnableMouse(false)
 		if showMsg then
-			ThreatMeter:MSG(ThreatMeter:Trans("TEXTISNOWLOCKED"))
+			ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISNOWLOCKED"))
 		end
 	else
 		self.frame:SetMovable(true)
 		self.frame:EnableMouse(true)
 		if showMsg then
-			ThreatMeter:MSG(ThreatMeter:Trans("TEXTISNOWUNLOCKED"))
+			ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISNOWUNLOCKED"))
 		end
 	end
 end
@@ -216,7 +215,7 @@ function ThreatMeter:CreateMainFrame()
 	self.frame = CreateFrame("Frame", "TMFrame", UIParent)
 	self.frame:SetSize(240, 80)
 	self.frame:SetPoint("CENTER", 0, 200)
-	self.frame:SetClampedToScreen(true)
+	ThreatMeter:SetClampedToScreen(self.frame, true)
 	self.frame:RegisterForDrag("LeftButton")
 	ThreatMeter:ToggleText("CreateMainFrame", false)
 	self.frame:SetScript(
@@ -227,9 +226,9 @@ function ThreatMeter:CreateMainFrame()
 				sel:StartMoving()
 			else
 				if InCombatLockdown() then
-					ThreatMeter:MSG(ThreatMeter:Trans("CANTBEMOVEDINCOMBAT"))
+					ThreatMeter:MSG(ThreatMeter:Trans("LID_CANTBEMOVEDINCOMBAT"))
 				elseif not sel:IsMovable() then
-					ThreatMeter:MSG(ThreatMeter:Trans("TEXTISLOCKEDHELPTEXT"))
+					ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISLOCKEDHELPTEXT"))
 				end
 			end
 		end
@@ -244,7 +243,7 @@ function ThreatMeter:CreateMainFrame()
 			p4 = ThreatMeter:Grid(p4)
 			p5 = ThreatMeter:Grid(p5)
 			ThreatMeter:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
-			ThreatMeter:MSG(ThreatMeter:Trans("SAVEDNEWTEXTPOSITION"))
+			ThreatMeter:MSG(ThreatMeter:Trans("LID_SAVEDNEWTEXTPOSITION"))
 			self.frame:ClearAllPoints()
 			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
 		end
@@ -277,7 +276,7 @@ function ThreatMeter:CreateMainFrame()
 	self.lockText.lock:SetAllPoints(self.lockText)
 	self.lockText.text = self.lockText:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	self.lockText.text:SetPoint("LEFT", self.lockText, "RIGHT", 0, 0)
-	self.lockText.text:SetText(ThreatMeter:Trans("ThreatMeterText"))
+	self.lockText.text:SetText(ThreatMeter:Trans("LID_ThreatMeterText"))
 	C_Timer.After(
 		0,
 		function()
