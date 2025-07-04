@@ -183,12 +183,13 @@ function ThreatMeter:UpdateThreat()
 		self.text:SetPoint("CENTER", 0, 0)
 		self.text2:SetText("")
 	end
-	--[[C_Timer.After(
+
+	C_Timer.After(
 		0.3,
 		function()
 			ThreatMeter:UpdateThreat()
 		end
-	)]]
+	)
 end
 
 function ThreatMeter:ToggleText(from, showMsg)
