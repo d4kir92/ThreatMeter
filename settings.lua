@@ -45,7 +45,7 @@ function ThreatMeter:ToggleSettings()
 end
 
 function ThreatMeter:InitSettings()
-	tm_settings = ThreatMeter:CreateFrame(
+	tm_settings = ThreatMeter:CreateWindow(
 		{
 			["name"] = "ThreatMeter",
 			["pTab"] = {"CENTER"},
