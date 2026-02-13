@@ -20,3 +20,4 @@ ThreatMeter:AddTrans("ruRU", "LID_TEXTISNOWLOCKED", "Текст теперь з�
 ThreatMeter:AddTrans("ruRU", "LID_SAVEDNEWTEXTPOSITION", "Сохранено новое положение текста.")
 ThreatMeter:AddTrans("ruRU", "LID_CANTBEMOVEDINCOMBAT", "Нельзя перемещать в бою.")
 ThreatMeter:AddTrans("ruRU", "LID_TEXTISLOCKEDHELPTEXT", "Текст заблокирован. Пожалуйста, сначала разблокируйте текст.")
+ThreatMeter:AddTrans("ruRU", "LID_DISPLAYBAR", "Display Bar")

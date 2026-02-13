@@ -14,14 +14,14 @@ function ThreatMeter:ToggleFrame()
 	end
 end
 
-function ThreatMeter:SetPositon(x, y)
+function ThreatMeter:SetPosition(x, y)
 	if self.frame then
 		self.frame:SetPoint("CENTER", UIParent, "CENTER", x, y)
 	else
 		C_Timer.After(
 			1,
 			function()
-				ThreatMeter:SetPositon(x, y)
+				ThreatMeter:SetPosition(x, y)
 			end
 		)
 	end
@@ -62,8 +62,7 @@ function ThreatMeter:InitSettings()
 	tm_settings.SC:SetSize(tm_settings.SF:GetSize())
 	tm_settings.SC:SetPoint("TOPLEFT", tm_settings.SF, "TOPLEFT", 0, 0)
 	tm_settings.SF:SetScrollChild(tm_settings.SC)
-	local y = 0
-	ThreatMeter:SetAppendY(y)
+	ThreatMeter:SetAppendY(0)
 	ThreatMeter:SetAppendParent(tm_settings.SC)
 	ThreatMeter:SetAppendTab(TMTAB)
 	ThreatMeter:AppendCategory("GENERAL")
@@ -105,26 +104,32 @@ function ThreatMeter:InitSettings()
 
 	ThreatMeter:AppendCheckbox("SHOWTEXTOUTSIDEOFCOMBAT", true)
 	ThreatMeter:AppendCheckbox("SHOWHIGHESTTHREAT", true)
+	ThreatMeter:AppendCheckbox(
+		"DISPLAYBAR",
+		false,
+		function(sel, val)
+			TMTAB["DISPLAYBAR"] = val
+		end
+	)
 end
 
-local frame = CreateFrame("FRAME")
-frame:RegisterEvent("PLAYER_LOGIN")
-frame:SetScript(
+local eventFrame = CreateFrame("FRAME")
+eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:SetScript(
 	"OnEvent",
 	function(self, event, ...)
 		if event == "PLAYER_LOGIN" then
 			TMTAB = TMTAB or {}
-			ThreatMeter:SetVersion(132117, "0.5.30")
+			ThreatMeter:SetVersion(132117, "0.5.31")
 			ThreatMeter:InitSettings()
 			ThreatMeter:CreateMainFrame()
 			ThreatMeter:AddSlash("tm", ThreatMeter.ToggleSettings)
 			ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
-			local mmbtn = nil
 			ThreatMeter:CreateMinimapButton(
 				{
 					["name"] = "ThreatMeter",
 					["icon"] = 132117,
-					["var"] = mmbtn,
+					["var"] = nil,
 					["dbtab"] = TMTAB,
 					["vTT"] = {{"|T132117:16:16:0:0|t T|cff3FC7EBhreat|rM|cff3FC7EBeter|r", "v|cff3FC7EB" .. ThreatMeter:GetVersion()}, {ThreatMeter:Trans("LID_LEFTCLICK"), ThreatMeter:Trans("LID_OPENSETTINGS")}, {ThreatMeter:Trans("LID_RIGHTCLICK"), ThreatMeter:Trans("LID_UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("LID_SHIFTRIGHTCLICK"), ThreatMeter:Trans("LID_HIDEMINIMAPBUTTON")}},
 					["funcL"] = function()
