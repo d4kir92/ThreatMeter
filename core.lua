@@ -1,7 +1,13 @@
 local _, ThreatMeter = ...
 local TMDebug = false
+function ThreatMeter:IsSafeUnit(unit)
+	return pcall(UnitExists, unit)
+end
+
 function ThreatMeter:UnitGUID(unit, target)
 	target = target or "player"
+	if not ThreatMeter:IsSafeUnit(unit) then return nil end
+	if not ThreatMeter:IsSafeUnit(target) then return nil end
 	if UnitExists(unit) and UnitIsEnemy(target, unit) then return UnitGUID(unit) end
 
 	return nil
@@ -9,19 +15,25 @@ end
 
 function ThreatMeter:UnitThreat(unit, target)
 	target = target or "player"
+	if not ThreatMeter:IsSafeUnit(unit) then return nil end
+	if not ThreatMeter:IsSafeUnit(target) then return nil end
 	if UnitExists(unit) then return select(3, UnitDetailedThreatSituation(target, unit)) end
 
 	return nil
 end
 
 function ThreatMeter:TestThreat(unit, highestTP, lowestTP, target)
-	if not UnitExists(unit) then return highestTP, lowestTP end
+	if not unit or not ThreatMeter:IsSafeUnit(unit) or not UnitExists(unit) then return highestTP, lowestTP end
 	target = target or "player"
 	local threatPercentage = ThreatMeter:UnitThreat(unit, target)
-	if threatPercentage then
-		highestTP = math.max(highestTP, threatPercentage)
-		lowestTP = math.min(lowestTP, threatPercentage)
-	end
+	pcall(
+		function()
+			if threatPercentage then
+				highestTP = math.max(highestTP, threatPercentage)
+				lowestTP = math.min(lowestTP, threatPercentage)
+			end
+		end
+	)
 
 	return highestTP, lowestTP
 end
