@@ -1,73 +1,48 @@
 local _, ThreatMeter = ...
 local TMDebug = false
-function ThreatMeter:IsSafeUnit(unit)
-	return pcall(UnitExists, unit)
+function ThreatMeter:SafeUnitExists(unit)
+	local ok, exists = pcall(UnitExists, unit)
+
+	return ok and exists
 end
 
 function ThreatMeter:UnitGUID(unit, target)
 	target = target or "player"
-	if not ThreatMeter:IsSafeUnit(unit) then return nil end
-	if not ThreatMeter:IsSafeUnit(target) then return nil end
-	if UnitExists(unit) and UnitIsEnemy(target, unit) then return UnitGUID(unit) end
+	if not ThreatMeter:SafeUnitExists(unit) then return nil end
+	if UnitIsEnemy(target, unit) then return UnitGUID(unit) end
 
 	return nil
 end
 
 function ThreatMeter:UnitThreat(unit, target)
 	target = target or "player"
-	if not ThreatMeter:IsSafeUnit(unit) then return nil end
-	if not ThreatMeter:IsSafeUnit(target) then return nil end
-	if UnitExists(unit) then return select(3, UnitDetailedThreatSituation(target, unit)) end
+	if ThreatMeter:SafeUnitExists(unit) then return select(3, UnitDetailedThreatSituation(target, unit)) end
 
 	return nil
 end
 
 function ThreatMeter:TestThreat(unit, highestTP, lowestTP, target)
-	if not unit or not ThreatMeter:IsSafeUnit(unit) or not UnitExists(unit) then return highestTP, lowestTP end
+	if not unit or not ThreatMeter:SafeUnitExists(unit) then return highestTP, lowestTP end
 	target = target or "player"
 	local threatPercentage = ThreatMeter:UnitThreat(unit, target)
-	pcall(
-		function()
-			if threatPercentage then
-				highestTP = math.max(highestTP, threatPercentage)
-				lowestTP = math.min(lowestTP, threatPercentage)
-			end
-		end
-	)
+	if threatPercentage then
+		highestTP = math.max(highestTP, threatPercentage)
+		lowestTP = math.min(lowestTP, threatPercentage)
+	end
 
 	return highestTP, lowestTP
 end
 
-local otherUnits = {"player", "pet"}
+local otherUnitsParty = {"player", "pet"}
 for i = 1, 4 do
-	tinsert(otherUnits, "party" .. i)
+	tinsert(otherUnitsParty, "party" .. i)
 end
 
+local otherUnitsRaid = {"player", "pet"}
 for i = 1, 40 do
-	tinsert(otherUnits, "raid" .. i)
+	tinsert(otherUnitsRaid, "raid" .. i)
 end
 
-local targetUnits = {}
-for i = 1, 8 do
-	tinsert(targetUnits, "boss" .. i)
-end
-
-for i = 1, 4 do
-	tinsert(targetUnits, "party" .. i .. "target")
-	tinsert(targetUnits, "partypet" .. i .. "target")
-end
-
-for i = 1, 40 do
-	tinsert(targetUnits, "raid" .. i .. "target")
-	tinsert(targetUnits, "raidpet" .. i .. "target")
-end
-
-tinsert(targetUnits, "target")
-tinsert(targetUnits, "targettarget")
-tinsert(targetUnits, "pettarget")
-tinsert(targetUnits, "focustarget")
-tinsert(targetUnits, "mouseover")
-tinsert(targetUnits, "mouseovertarget")
 local tabHighestTP = {}
 local tabLowestTP = {}
 local function RGBToHex(r, g, b)
@@ -127,14 +102,17 @@ function ThreatMeter:UpdateThreat()
 		highestTP, lowestTP = ThreatMeter:TestThreat("boss" .. i, highestTP, lowestTP)
 	end
 
-	for i = 1, 4 do
-		highestTP, lowestTP = ThreatMeter:TestThreat("party" .. i .. "target", highestTP, lowestTP)
-		highestTP, lowestTP = ThreatMeter:TestThreat("partypet" .. i .. "target", highestTP, lowestTP)
-	end
-
-	for i = 1, 40 do
-		highestTP, lowestTP = ThreatMeter:TestThreat("raid" .. i .. "target", highestTP, lowestTP)
-		highestTP, lowestTP = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestTP, lowestTP)
+	local inRaid = IsInRaid()
+	if inRaid then
+		for i = 1, GetNumGroupMembers() do
+			highestTP, lowestTP = ThreatMeter:TestThreat("raid" .. i .. "target", highestTP, lowestTP)
+			highestTP, lowestTP = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestTP, lowestTP)
+		end
+	elseif IsInGroup() then
+		for i = 1, 4 do
+			highestTP, lowestTP = ThreatMeter:TestThreat("party" .. i .. "target", highestTP, lowestTP)
+			highestTP, lowestTP = ThreatMeter:TestThreat("partypet" .. i .. "target", highestTP, lowestTP)
+		end
 	end
 
 	highestTP, lowestTP = ThreatMeter:TestThreat("target", highestTP, lowestTP)
@@ -144,6 +122,7 @@ function ThreatMeter:UpdateThreat()
 	highestTP, lowestTP = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP)
 	highestTP, lowestTP = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP)
 	if TMTAB["SHOWHIGHESTTHREAT"] then
+		local otherUnits = inRaid and otherUnitsRaid or otherUnitsParty
 		for x, unit in pairs(otherUnits) do
 			tabHighestTP[unit] = 0
 			tabLowestTP[unit] = 100
@@ -157,7 +136,6 @@ function ThreatMeter:UpdateThreat()
 			if UnitExists(unit) and highestUnitTP < tabHighestTP[unit] then
 				highestUnitTP = tabHighestTP[unit]
 				highestUnit = unit
-				foundHighest = true
 			end
 		end
 	end
@@ -407,22 +385,6 @@ function ThreatMeter:CreateMainFrame()
 		end
 	)
 
-	function ThreatMeter:UpdateLockButton()
-		if ThreatMeter:GV(TMTAB, "lockedText", true) then
-			self.lockText:Hide()
-		else
-			self.lockText:Show()
-		end
-
-		C_Timer.After(
-			0.4,
-			function()
-				ThreatMeter:UpdateLockButton()
-			end
-		)
-	end
-
 	ThreatMeter:ToggleText("CreateMainFrame", false)
-	ThreatMeter:UpdateLockButton()
 	ThreatMeter:UpdateThreat()
 end
