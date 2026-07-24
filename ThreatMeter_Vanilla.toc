@@ -1,5 +1,5 @@
-## Interface: 11508
-## Version: 0.5.37
+## Interface: 11509
+## Version: 0.5.38
 ## Title: ThreatMeter |T132117:16:16:0:0|t by |cff55d2ffD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter
 ## Notes-ruRU: ThreatMeter - аддон, который отображает наивысший процент угрозы среди всех мобов, которые в данный момент находятся в зоне видимости
