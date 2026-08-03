@@ -95,7 +95,14 @@ function ThreatMeter:UpdateThreat()
 	local lowestTP = 100
 	local highestUnit = ""
 	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
-		highestTP, lowestTP = ThreatMeter:TestThreat(nameplate.UnitFrame.unit, highestTP, lowestTP)
+		local unit = nameplate.unitToken
+		if unit == nil and nameplate.UnitFrame then
+			unit = nameplate.UnitFrame.unit
+		end
+
+		if unit ~= nil then
+			highestTP, lowestTP = ThreatMeter:TestThreat(nameplate.unitToken or nameplate.UnitFrame.unit, highestTP, lowestTP)
+		end
 	end
 
 	for i = 1, 8 do
