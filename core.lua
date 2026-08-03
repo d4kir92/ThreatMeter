@@ -2,7 +2,6 @@ local _, ThreatMeter = ...
 local TMDebug = false
 function ThreatMeter:SafeUnitExists(unit)
 	local ok, exists = pcall(UnitExists, unit)
-
 	return ok and exists
 end
 
@@ -10,14 +9,12 @@ function ThreatMeter:UnitGUID(unit, target)
 	target = target or "player"
 	if not ThreatMeter:SafeUnitExists(unit) then return nil end
 	if UnitIsEnemy(target, unit) then return UnitGUID(unit) end
-
 	return nil
 end
 
 function ThreatMeter:UnitThreat(unit, target)
 	target = target or "player"
 	if ThreatMeter:SafeUnitExists(unit) then return select(3, UnitDetailedThreatSituation(target, unit)) end
-
 	return nil
 end
 
@@ -29,7 +26,6 @@ function ThreatMeter:TestThreat(unit, highestTP, lowestTP, target)
 		highestTP = math.max(highestTP, threatPercentage)
 		lowestTP = math.min(lowestTP, threatPercentage)
 	end
-
 	return highestTP, lowestTP
 end
 
@@ -50,10 +46,7 @@ local function RGBToHex(r, g, b)
 end
 
 function ThreatMeter:UpdateBar(text, barContainer, barLow, barHigh, barBr, low, high, r, g, b, inCombat, show)
-	if TMTAB["DISPLAYBAR"] == nil then
-		TMTAB["DISPLAYBAR"] = true
-	end
-
+	if TMTAB["DISPLAYBAR"] == nil then TMTAB["DISPLAYBAR"] = true end
 	if show then
 		if inCombat then
 			if TMTAB["DISPLAYBAR"] then
@@ -96,13 +89,8 @@ function ThreatMeter:UpdateThreatLogic()
 	local highestUnit = ""
 	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
 		local unit = nameplate.unitToken
-		if unit == nil and nameplate.UnitFrame then
-			unit = nameplate.UnitFrame.unit
-		end
-
-		if unit ~= nil then
-			highestTP, lowestTP = ThreatMeter:TestThreat(nameplate.unitToken or nameplate.UnitFrame.unit, highestTP, lowestTP)
-		end
+		if unit == nil and nameplate.UnitFrame then unit = nameplate.UnitFrame.unit end
+		if unit ~= nil then highestTP, lowestTP = ThreatMeter:TestThreat(nameplate.unitToken or nameplate.UnitFrame.unit, highestTP, lowestTP) end
 	end
 
 	for i = 1, 8 do
@@ -133,9 +121,7 @@ function ThreatMeter:UpdateThreatLogic()
 		for x, unit in pairs(otherUnits) do
 			tabHighestTP[unit] = 0
 			tabLowestTP[unit] = 100
-			if UnitExists(unit) then
-				tabHighestTP[unit], tabLowestTP[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], unit)
-			end
+			if UnitExists(unit) then tabHighestTP[unit], tabLowestTP[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], unit) end
 		end
 
 		local highestUnitTP = 0
@@ -147,10 +133,7 @@ function ThreatMeter:UpdateThreatLogic()
 		end
 	end
 
-	if TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] == nil then
-		TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] = true
-	end
-
+	if TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] == nil then TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] = true end
 	if UnitAffectingCombat("player") or highestUnit ~= "" and UnitAffectingCombat(highestUnit) then
 		local r = 0
 		local g = 1
@@ -206,13 +189,8 @@ function ThreatMeter:UpdateThreatLogic()
 		self.text2Container:SetPoint("CENTER", 0, 16)
 		local playerName = UnitName("player")
 		local unitName = UnitName(highestUnit)
-		if playerName then
-			self.text1:SetText(playerName .. ": " .. self.text1:GetText())
-		end
-
-		if unitName then
-			self.text2:SetText(unitName .. ": " .. self.text2:GetText())
-		end
+		if playerName then self.text1:SetText(playerName .. ": " .. self.text1:GetText()) end
+		if unitName then self.text2:SetText(unitName .. ": " .. self.text2:GetText()) end
 	else
 		self.bar1Container:SetPoint("CENTER", 0, 0)
 		self.text1Container:SetPoint("CENTER", 0, 0)
@@ -224,30 +202,21 @@ end
 function ThreatMeter:UpdateThreat()
 	local ok, err = pcall(ThreatMeter.UpdateThreatLogic, ThreatMeter)
 	if not ok then print(err) end
-	C_Timer.After(0.3, function() 
-		ThreatMeter:UpdateThreat() 
-	end)
+	C_Timer.After(0.3, function() ThreatMeter:UpdateThreat() end)
 end
 
 function ThreatMeter:ToggleText(from, showMsg)
-	if showMsg == nil then
-		showMsg = false
-	end
-
+	if showMsg == nil then showMsg = false end
 	if ThreatMeter:GV(TMTAB, "lockedText", true) then
 		self.lockText:Hide()
 		self.frame:SetMovable(false)
 		self.frame:EnableMouse(false)
-		if showMsg then
-			ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISNOWLOCKED"))
-		end
+		if showMsg then ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISNOWLOCKED")) end
 	else
 		self.lockText:Show()
 		self.frame:SetMovable(true)
 		self.frame:EnableMouse(true)
-		if showMsg then
-			ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISNOWUNLOCKED"))
-		end
+		if showMsg then ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISNOWUNLOCKED")) end
 	end
 end
 
@@ -257,36 +226,30 @@ function ThreatMeter:CreateMainFrame()
 	self.frame:SetPoint("CENTER", 0, 200)
 	ThreatMeter:SetClampedToScreen(self.frame, true)
 	self.frame:RegisterForDrag("LeftButton")
-	self.frame:SetScript(
-		"OnDragStart",
-		function(sel)
-			if not ThreatMeter:GV(TMTAB, "lockedText", true) and not InCombatLockdown() and sel:IsMovable() then
-				ThreatMeter:ShowGrid(sel)
-				sel:StartMoving()
-			else
-				if InCombatLockdown() then
-					ThreatMeter:MSG(ThreatMeter:Trans("LID_CANTBEMOVEDINCOMBAT"))
-				elseif not sel:IsMovable() then
-					ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISLOCKEDHELPTEXT"))
-				end
+	self.frame:SetScript("OnDragStart", function(sel)
+		if not ThreatMeter:GV(TMTAB, "lockedText", true) and not InCombatLockdown() and sel:IsMovable() then
+			ThreatMeter:ShowGrid(sel)
+			sel:StartMoving()
+		else
+			if InCombatLockdown() then
+				ThreatMeter:MSG(ThreatMeter:Trans("LID_CANTBEMOVEDINCOMBAT"))
+			elseif not sel:IsMovable() then
+				ThreatMeter:MSG(ThreatMeter:Trans("LID_TEXTISLOCKEDHELPTEXT"))
 			end
 		end
-	)
+	end)
 
-	self.frame:SetScript(
-		"OnDragStop",
-		function(sel)
-			ThreatMeter:HideGrid(sel)
-			self.frame:StopMovingOrSizing()
-			local p1, _, p3, p4, p5 = self.frame:GetPoint()
-			p4 = ThreatMeter:Grid(p4)
-			p5 = ThreatMeter:Grid(p5)
-			ThreatMeter:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
-			ThreatMeter:MSG(ThreatMeter:Trans("LID_SAVEDNEWTEXTPOSITION"))
-			self.frame:ClearAllPoints()
-			self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
-		end
-	)
+	self.frame:SetScript("OnDragStop", function(sel)
+		ThreatMeter:HideGrid(sel)
+		self.frame:StopMovingOrSizing()
+		local p1, _, p3, p4, p5 = self.frame:GetPoint()
+		p4 = ThreatMeter:Grid(p4)
+		p5 = ThreatMeter:Grid(p5)
+		ThreatMeter:SV(TMTAB, "TMFrame", {p1, "UIParent", p3, p4, p5})
+		ThreatMeter:MSG(ThreatMeter:Trans("LID_SAVEDNEWTEXTPOSITION"))
+		self.frame:ClearAllPoints()
+		self.frame:SetPoint(p1, "UIParent", p3, p4, p5)
+	end)
 
 	local p1, p2, p3, p4, p5 = unpack(ThreatMeter:GV(TMTAB, "TMFrame", {}))
 	if p1 then
@@ -370,13 +333,10 @@ function ThreatMeter:CreateMainFrame()
 	self.lockText:SetText("")
 	self.lockText:SetSize(40, 40)
 	self.lockText:SetPoint("LEFT", self.frame, "RIGHT", 0, 0)
-	self.lockText:SetScript(
-		"OnClick",
-		function()
-			ThreatMeter:SV(TMTAB, "lockedText", true)
-			ThreatMeter:ToggleText("lock", true)
-		end
-	)
+	self.lockText:SetScript("OnClick", function()
+		ThreatMeter:SV(TMTAB, "lockedText", true)
+		ThreatMeter:ToggleText("lock", true)
+	end)
 
 	self.lockText.lock = self.lockText:CreateTexture("lockText.lock", "ARTWORK")
 	self.lockText.lock:SetTexture("Interface\\Buttons\\LockButton-Locked-Up")
@@ -384,14 +344,11 @@ function ThreatMeter:CreateMainFrame()
 	self.lockText.text1 = self.lockText:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	self.lockText.text1:SetPoint("LEFT", self.lockText, "RIGHT", 0, 0)
 	self.lockText.text1:SetText(ThreatMeter:Trans("LID_ThreatMeterText"))
-	C_Timer.After(
-		0,
-		function()
-			ThreatMeter:SetFontSize(self.lockText.text1, 14, "OUTLINE")
-			ThreatMeter:SetFontSize(self.text1, 24, "OUTLINE")
-			ThreatMeter:SetFontSize(self.text2, 24, "OUTLINE")
-		end
-	)
+	C_Timer.After(0, function()
+		ThreatMeter:SetFontSize(self.lockText.text1, 14, "OUTLINE")
+		ThreatMeter:SetFontSize(self.text1, 24, "OUTLINE")
+		ThreatMeter:SetFontSize(self.text2, 24, "OUTLINE")
+	end)
 
 	ThreatMeter:ToggleText("CreateMainFrame", false)
 	ThreatMeter:UpdateThreat()

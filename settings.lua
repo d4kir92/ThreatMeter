@@ -5,12 +5,7 @@ function ThreatMeter:ToggleFrame()
 		ThreatMeter:SV(TMTAB, "lockedText", not ThreatMeter:GV(TMTAB, "lockedText", true))
 		ThreatMeter:ToggleText("ToggleFrame", true)
 	else
-		C_Timer.After(
-			1,
-			function()
-				ThreatMeter:ToggleFrame()
-			end
-		)
+		C_Timer.After(1, function() ThreatMeter:ToggleFrame() end)
 	end
 end
 
@@ -18,19 +13,12 @@ function ThreatMeter:SetPosition(x, y)
 	if self.frame then
 		self.frame:SetPoint("CENTER", UIParent, "CENTER", x, y)
 	else
-		C_Timer.After(
-			1,
-			function()
-				ThreatMeter:SetPosition(x, y)
-			end
-		)
+		C_Timer.After(1, function() ThreatMeter:SetPosition(x, y) end)
 	end
 end
 
 function ThreatMeter:SetTextScale(val)
-	if val and type(val) == "number" then
-		self.frame:SetScale(val)
-	end
+	if val and type(val) == "number" then self.frame:SetScale(val) end
 end
 
 local tm_settings = nil
@@ -45,15 +33,13 @@ function ThreatMeter:ToggleSettings()
 end
 
 function ThreatMeter:InitSettings()
-	tm_settings = ThreatMeter:CreateWindow(
-		{
-			["name"] = "ThreatMeter",
-			["pTab"] = {"CENTER"},
-			["sw"] = 520,
-			["sh"] = 520,
-			["title"] = format("|T132117:16:16:0:0|t ThreatMeter v%s", ThreatMeter:GetVersion())
-		}
-	)
+	tm_settings = ThreatMeter:CreateWindow({
+		["name"] = "ThreatMeter",
+		["pTab"] = {"CENTER"},
+		["sw"] = 520,
+		["sh"] = 520,
+		["title"] = format("|T132117:16:16:0:0|t ThreatMeter v%s", ThreatMeter:GetVersion())
+	})
 
 	tm_settings.SF = CreateFrame("ScrollFrame", "tm_settings_SF", tm_settings, "UIPanelScrollFrameTemplate")
 	tm_settings.SF:SetPoint("TOPLEFT", tm_settings, 8, -26)
@@ -66,88 +52,54 @@ function ThreatMeter:InitSettings()
 	ThreatMeter:SetAppendParent(tm_settings.SC)
 	ThreatMeter:SetAppendTab(TMTAB)
 	ThreatMeter:AppendCategory("GENERAL")
-	ThreatMeter:AppendCheckbox(
-		"MMBTN",
-		ThreatMeter:GetWoWBuild() ~= "RETAIL",
-		function(sel, checked)
-			if checked then
-				ThreatMeter:ShowMMBtn("ThreatMeter")
-			else
-				ThreatMeter:HideMMBtn("ThreatMeter")
-			end
+	ThreatMeter:AppendCheckbox("MMBTN", ThreatMeter:GetWoWBuild() ~= "RETAIL", function(sel, checked)
+		if checked then
+			ThreatMeter:ShowMMBtn("ThreatMeter")
+		else
+			ThreatMeter:HideMMBtn("ThreatMeter")
 		end
-	)
+	end)
 
 	ThreatMeter:AppendCategory("TEXT")
-	ThreatMeter:AppendSlider(
-		"TEXTSCALE",
-		1,
-		0.4,
-		2,
-		0.1,
-		1,
-		function(sel, val)
-			if val then
-				TMTAB["TEXTSCALE"] = val
-				ThreatMeter:SetTextScale(val)
-			end
+	ThreatMeter:AppendSlider("TEXTSCALE", 1, 0.4, 2, 0.1, 1, function(sel, val)
+		if val then
+			TMTAB["TEXTSCALE"] = val
+			ThreatMeter:SetTextScale(val)
 		end
-	)
+	end)
 
-	ThreatMeter:AppendCheckbox(
-		"lockedText",
-		true,
-		function()
-			ThreatMeter:ToggleText("lockedText CheckBox", true)
-		end
-	)
-
+	ThreatMeter:AppendCheckbox("lockedText", true, function() ThreatMeter:ToggleText("lockedText CheckBox", true) end)
 	ThreatMeter:AppendCheckbox("SHOWTEXTOUTSIDEOFCOMBAT", true)
 	ThreatMeter:AppendCheckbox("SHOWHIGHESTTHREAT", true)
-	ThreatMeter:AppendCheckbox(
-		"DISPLAYBAR",
-		false,
-		function(sel, val)
-			TMTAB["DISPLAYBAR"] = val
-		end
-	)
+	ThreatMeter:AppendCheckbox("DISPLAYBAR", false, function(sel, val) TMTAB["DISPLAYBAR"] = val end)
 end
 
 local eventFrame = CreateFrame("FRAME")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
-eventFrame:SetScript(
-	"OnEvent",
-	function(self, event, ...)
-		if event == "PLAYER_LOGIN" then
-			TMTAB = TMTAB or {}
-			ThreatMeter:SetVersion(132117, "0.5.40")
-			ThreatMeter:InitSettings()
-			ThreatMeter:CreateMainFrame()
-			ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
-			ThreatMeter:CreateMinimapButton(
-				{
-					["name"] = "ThreatMeter",
-					["icon"] = 132117,
-					["var"] = nil,
-					["dbtab"] = TMTAB,
-					["vTT"] = {{"|T132117:16:16:0:0|t ThreatMeter", "v" .. ThreatMeter:GetVersion()}, {ThreatMeter:Trans("LID_LEFTCLICK"), ThreatMeter:Trans("LID_OPENSETTINGS")}, {ThreatMeter:Trans("LID_RIGHTCLICK"), ThreatMeter:Trans("LID_UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("LID_SHIFTRIGHTCLICK"), ThreatMeter:Trans("LID_HIDEMINIMAPBUTTON")}},
-					["funcL"] = function()
-						ThreatMeter:ToggleSettings()
-					end,
-					["funcR"] = function()
-						ThreatMeter:ToggleFrame()
-					end,
-					["funcSR"] = function()
-						ThreatMeter:SV(TMTAB, "MMBTN", false)
-						ThreatMeter:MSG(ThreatMeter:Trans("LID_MINIMAPBUTTONISNOWHIDDEN"))
-						ThreatMeter:HideMMBtn("ThreatMeter")
-					end,
-					["dbkey"] = "MMBTN"
-				}
-			)
+eventFrame:SetScript("OnEvent", function(self, event, ...)
+	if event == "PLAYER_LOGIN" then
+		TMTAB = TMTAB or {}
+		ThreatMeter:SetVersion(132117, "0.5.41")
+		ThreatMeter:InitSettings()
+		ThreatMeter:CreateMainFrame()
+		ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
+		ThreatMeter:CreateMinimapButton({
+			["name"] = "ThreatMeter",
+			["icon"] = 132117,
+			["var"] = nil,
+			["dbtab"] = TMTAB,
+			["vTT"] = {{"|T132117:16:16:0:0|t ThreatMeter", "v" .. ThreatMeter:GetVersion()}, {ThreatMeter:Trans("LID_LEFTCLICK"), ThreatMeter:Trans("LID_OPENSETTINGS")}, {ThreatMeter:Trans("LID_RIGHTCLICK"), ThreatMeter:Trans("LID_UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("LID_SHIFTRIGHTCLICK"), ThreatMeter:Trans("LID_HIDEMINIMAPBUTTON")}},
+			["funcL"] = function() ThreatMeter:ToggleSettings() end,
+			["funcR"] = function() ThreatMeter:ToggleFrame() end,
+			["funcSR"] = function()
+				ThreatMeter:SV(TMTAB, "MMBTN", false)
+				ThreatMeter:MSG(ThreatMeter:Trans("LID_MINIMAPBUTTONISNOWHIDDEN"))
+				ThreatMeter:HideMMBtn("ThreatMeter")
+			end,
+			["dbkey"] = "MMBTN"
+		})
 
-			TMTAB["TEXTSCALE"] = TMTAB["TEXTSCALE"] or 1
-			ThreatMeter:SetTextScale(TMTAB["TEXTSCALE"])
-		end
+		TMTAB["TEXTSCALE"] = TMTAB["TEXTSCALE"] or 1
+		ThreatMeter:SetTextScale(TMTAB["TEXTSCALE"])
 	end
-)
+end)
