@@ -199,10 +199,12 @@ function ThreatMeter:UpdateThreatLogic()
 	end
 end
 
-function ThreatMeter:UpdateThreat()
-	local ok, err = pcall(ThreatMeter.UpdateThreatLogic, ThreatMeter)
-	if not ok then print(err) end
-	C_Timer.After(0.3, function() ThreatMeter:UpdateThreat() end)
+function ThreatMeter:StartThreatTicker()
+	if self.ticker then self.ticker:Cancel() end
+	self.ticker = C_Timer.NewTicker(0.3, function()
+		local ok, err = pcall(ThreatMeter.UpdateThreatLogic, ThreatMeter)
+		if not ok then ThreatMeter:ERR(err) end
+	end)
 end
 
 function ThreatMeter:ToggleText(from, showMsg)
@@ -351,5 +353,7 @@ function ThreatMeter:CreateMainFrame()
 	end)
 
 	ThreatMeter:ToggleText("CreateMainFrame", false)
-	ThreatMeter:UpdateThreat()
+	C_Timer.After(3, function() ThreatMeter:StartThreatTicker() end)
+	local ok, err = pcall(ThreatMeter.UpdateThreatLogic, ThreatMeter)
+	if not ok then print(err) end
 end
