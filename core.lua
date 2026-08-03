@@ -90,7 +90,7 @@ function ThreatMeter:UpdateBar(text, barContainer, barLow, barHigh, barBr, low, 
 	end
 end
 
-function ThreatMeter:UpdateThreat()
+function ThreatMeter:UpdateThreatLogic()
 	local highestTP = 0
 	local lowestTP = 100
 	local highestUnit = ""
@@ -219,13 +219,14 @@ function ThreatMeter:UpdateThreat()
 		self.bar2Container:SetPoint("CENTER", 0, 0)
 		self.text2Container:SetPoint("CENTER", 0, 0)
 	end
+end
 
-	C_Timer.After(
-		0.3,
-		function()
-			ThreatMeter:UpdateThreat()
-		end
-	)
+function ThreatMeter:UpdateThreat()
+	local ok, err = pcall(ThreatMeter.UpdateThreatLogic, ThreatMeter)
+	if not ok then print(err) end
+	C_Timer.After(0.3, function() 
+		ThreatMeter:UpdateThreat() 
+	end)
 end
 
 function ThreatMeter:ToggleText(from, showMsg)
