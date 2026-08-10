@@ -1,8 +1,17 @@
 ## Interface: 20506
-## Version: 0.5.42
+## Version: 0.5.43
 ## Title: ThreatMeter |T132117:16:16:0:0|t by |cff55d2ffD4KiR |T132115:16:16:0:0|t
-## Notes: ThreatMeter
+## Notes: ThreatMeter – an add-on that displays the highest threat percentage of all mobs currently within your field of view
+## Notes-deDE: ThreatMeter – ein Add-on, das den höchsten Bedrohungsprozentsatz aller Mobs anzeigt, die sich derzeit in deinem Sichtfeld befinden
+## Notes-esES: ThreatMeter: un complemento que muestra el porcentaje de amenaza más alto de todos los monstruos actualmente en tu campo de visión
+## Notes-esMX: ThreatMeter: un complemento que muestra el porcentaje de amenaza más alto de todos los monstruos actualmente en tu campo de visión
+## Notes-frFR: ThreatMeter – un module complémentaire qui affiche le pourcentage de menace le plus élevé de tous les monstres actuellement dans votre champ de vision
+## Notes-itIT: ThreatMeter – un add-on che mostra la percentuale di minaccia più alta di tutti i mostri attualmente nel tuo campo visivo
+## Notes-koKR: ThreatMeter – 현재 시야 내 모든 몹의 가장 높은 위협 수치 비율을 표시하는 애드온입니다
+## Notes-ptBR: ThreatMeter – um addon que exibe a maior porcentagem de ameaça de todos os monstros atualmente no seu campo de visão
 ## Notes-ruRU: ThreatMeter - аддон, который отображает наивысший процент угрозы среди всех мобов, которые в данный момент находятся в зоне видимости
+## Notes-zhCN: ThreatMeter——显示当前视野内所有怪物中最高仇恨百分比的插件
+## Notes-zhTW: ThreatMeter——顯示目前視野內所有怪物中最高仇恨百分比的外掛
 ## Author: D4KiR |T132115:16:16:0:0|t
 ## Category: Combat
 ## Category-deDE: Kampf
@@ -26,7 +35,15 @@ libs\D4Lib\D4Lib.xml
 
 locale\enUS.lua
 locale\deDE.lua
+locale\esES.lua
+locale\esMX.lua
+locale\frFR.lua
+locale\itIT.lua
+locale\koKR.lua
+locale\ptBR.lua
 locale\ruRU.lua
+locale\zhCN.lua
+locale\zhTW.lua
 
 settings.lua
 core.lua
