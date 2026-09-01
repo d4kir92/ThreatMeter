@@ -2,7 +2,9 @@
 -- Translated by Hollicsh
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("ruRU", "LID_GENERAL", "Основное")
+ThreatMeter:AddTrans("ruRU", "LID_DISPLAY", "Отображение")
 ThreatMeter:AddTrans("ruRU", "LID_TEXT", "Текст")
+ThreatMeter:AddTrans("ruRU", "LID_BAR", "Полоса")
 ThreatMeter:AddTrans("ruRU", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "Показывать текст вне боя")
 ThreatMeter:AddTrans("ruRU", "LID_TEXTSCALE", "Масштаб текста: %0.1f")
 ThreatMeter:AddTrans("ruRU", "LID_MMBTN", "Показывать кнопку миникарты")

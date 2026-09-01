@@ -1,7 +1,9 @@
 -- zhTW Chinese Traditional 繁體中文
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("zhTW", "LID_GENERAL", "一般")
+ThreatMeter:AddTrans("zhTW", "LID_DISPLAY", "顯示")
 ThreatMeter:AddTrans("zhTW", "LID_TEXT", "文字")
+ThreatMeter:AddTrans("zhTW", "LID_BAR", "進度條")
 ThreatMeter:AddTrans("zhTW", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "在非戰鬥時顯示文字")
 ThreatMeter:AddTrans("zhTW", "LID_TEXTSCALE", "文字縮放：%0.1f")
 ThreatMeter:AddTrans("zhTW", "LID_MMBTN", "顯示小地圖按鈕")

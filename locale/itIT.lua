@@ -1,7 +1,9 @@
 -- itIT Italian Italiano
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("itIT", "LID_GENERAL", "Generale")
+ThreatMeter:AddTrans("itIT", "LID_DISPLAY", "Visualizzazione")
 ThreatMeter:AddTrans("itIT", "LID_TEXT", "Testo")
+ThreatMeter:AddTrans("itIT", "LID_BAR", "Barra")
 ThreatMeter:AddTrans("itIT", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "Mostra testo fuori dal combattimento")
 ThreatMeter:AddTrans("itIT", "LID_TEXTSCALE", "Scala testo: %0.1f")
 ThreatMeter:AddTrans("itIT", "LID_MMBTN", "Mostra pulsante minimappa")

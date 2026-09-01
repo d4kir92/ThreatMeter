@@ -1,7 +1,9 @@
 -- ptBR Portuguese (Brazil)
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("ptBR", "LID_GENERAL", "Geral")
+ThreatMeter:AddTrans("ptBR", "LID_DISPLAY", "Exibição")
 ThreatMeter:AddTrans("ptBR", "LID_TEXT", "Texto")
+ThreatMeter:AddTrans("ptBR", "LID_BAR", "Barra")
 ThreatMeter:AddTrans("ptBR", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "Mostrar texto fora de combate")
 ThreatMeter:AddTrans("ptBR", "LID_TEXTSCALE", "Escala do texto: %0.1f")
 ThreatMeter:AddTrans("ptBR", "LID_MMBTN", "Mostrar botão do minimapa")

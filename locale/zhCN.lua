@@ -1,7 +1,9 @@
 -- zhCN Chinese Simplified 简体中文
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("zhCN", "LID_GENERAL", "常规")
+ThreatMeter:AddTrans("zhCN", "LID_DISPLAY", "显示")
 ThreatMeter:AddTrans("zhCN", "LID_TEXT", "文本")
+ThreatMeter:AddTrans("zhCN", "LID_BAR", "进度条")
 ThreatMeter:AddTrans("zhCN", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "在非战斗状态下显示文本")
 ThreatMeter:AddTrans("zhCN", "LID_TEXTSCALE", "文本缩放：%0.1f")
 ThreatMeter:AddTrans("zhCN", "LID_MMBTN", "显示小地图按钮")

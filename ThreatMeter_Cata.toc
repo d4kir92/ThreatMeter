@@ -1,5 +1,5 @@
 ## Interface: 40402
-## Version: 0.5.44
+## Version: 0.6.0
 ## Title: ThreatMeter |T132117:16:16:0:0|t by |cff55d2ffD4KiR |T132115:16:16:0:0|t
 ## Notes: ThreatMeter – an add-on that displays the highest threat percentage of all mobs currently within your field of view
 ## Notes-deDE: ThreatMeter – ein Add-on, das den höchsten Bedrohungsprozentsatz aller Mobs anzeigt, die sich derzeit in deinem Sichtfeld befinden

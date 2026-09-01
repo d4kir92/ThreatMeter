@@ -1,7 +1,9 @@
 -- frFR French Français
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("frFR", "LID_GENERAL", "Général")
+ThreatMeter:AddTrans("frFR", "LID_DISPLAY", "Affichage")
 ThreatMeter:AddTrans("frFR", "LID_TEXT", "Texte")
+ThreatMeter:AddTrans("frFR", "LID_BAR", "Barre")
 ThreatMeter:AddTrans("frFR", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "Afficher le texte hors combat")
 ThreatMeter:AddTrans("frFR", "LID_TEXTSCALE", "Échelle du texte : %0.1f")
 ThreatMeter:AddTrans("frFR", "LID_MMBTN", "Afficher le bouton de la minicarte")

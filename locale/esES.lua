@@ -1,7 +1,9 @@
 -- esES Spanish (Spain)
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("esES", "LID_GENERAL", "General")
+ThreatMeter:AddTrans("esES", "LID_DISPLAY", "Visualización")
 ThreatMeter:AddTrans("esES", "LID_TEXT", "Texto")
+ThreatMeter:AddTrans("esES", "LID_BAR", "Barra")
 ThreatMeter:AddTrans("esES", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "Mostrar texto fuera de combate")
 ThreatMeter:AddTrans("esES", "LID_TEXTSCALE", "Escala de texto: %0.1f")
 ThreatMeter:AddTrans("esES", "LID_MMBTN", "Mostrar botón de minimapa")

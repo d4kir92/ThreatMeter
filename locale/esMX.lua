@@ -1,7 +1,9 @@
 -- esMX Spanish (Mexico)
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("esMX", "LID_GENERAL", "General")
+ThreatMeter:AddTrans("esMX", "LID_DISPLAY", "Visualización")
 ThreatMeter:AddTrans("esMX", "LID_TEXT", "Texto")
+ThreatMeter:AddTrans("esMX", "LID_BAR", "Barra")
 ThreatMeter:AddTrans("esMX", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "Mostrar texto fuera de combate")
 ThreatMeter:AddTrans("esMX", "LID_TEXTSCALE", "Escala de texto: %0.1f")
 ThreatMeter:AddTrans("esMX", "LID_MMBTN", "Mostrar botón de minimapa")

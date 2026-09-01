@@ -1,7 +1,9 @@
 -- koKR Korean 한국어
 local _, ThreatMeter = ...
 ThreatMeter:AddTrans("koKR", "LID_GENERAL", "일반")
+ThreatMeter:AddTrans("koKR", "LID_DISPLAY", "표시")
 ThreatMeter:AddTrans("koKR", "LID_TEXT", "텍스트")
+ThreatMeter:AddTrans("koKR", "LID_BAR", "바")
 ThreatMeter:AddTrans("koKR", "LID_SHOWTEXTOUTSIDEOFCOMBAT", "전투 중이 아닐 때 텍스트 표시")
 ThreatMeter:AddTrans("koKR", "LID_TEXTSCALE", "텍스트 크기: %0.1f")
 ThreatMeter:AddTrans("koKR", "LID_MMBTN", "미니맵 버튼 표시")
