@@ -135,7 +135,7 @@ eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:SetScript("OnEvent", function(self, event, ...)
 	if event == "PLAYER_LOGIN" then
 		TMTAB = TMTAB or {}
-		ThreatMeter:SetVersion(132117, "0.6.0")
+		ThreatMeter:SetVersion(132117, "0.6.1")
 		ThreatMeter:InitSettings()
 		ThreatMeter:CreateMainFrame()
 		ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
