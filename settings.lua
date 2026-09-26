@@ -150,13 +150,32 @@ function ThreatMeter:InitSettings()
 	AddCategory("DAMAGEMETERTHREAT")
 	AddCheckbox("SHOWDAMAGEMETERTHREAT", true, function() ThreatMeter:ApplyDamageMeterEnabled() end)
 	AddDropdown("DMDISPLAYVALUE", "value_relative", {
-		{value = "none", label = "LID_DISPLAYNONE"},
-		{value = "value", label = "LID_DISPLAYTHREATVALUE"},
-		{value = "relative", label = "LID_DISPLAYTANKPERCENT"},
-		{value = "pull", label = "LID_DISPLAYPULLPERCENT"},
-		{value = "value_relative", label = "LID_DISPLAYVALUETANKPERCENT"},
-		{value = "value_pull", label = "LID_DISPLAYVALUEPULLPERCENT"}
+		{
+			value = "none",
+			label = "LID_DISPLAYNONE"
+		},
+		{
+			value = "value",
+			label = "LID_DISPLAYTHREATVALUE"
+		},
+		{
+			value = "relative",
+			label = "LID_DISPLAYTANKPERCENT"
+		},
+		{
+			value = "pull",
+			label = "LID_DISPLAYPULLPERCENT"
+		},
+		{
+			value = "value_relative",
+			label = "LID_DISPLAYVALUETANKPERCENT"
+		},
+		{
+			value = "value_pull",
+			label = "LID_DISPLAYVALUEPULLPERCENT"
+		}
 	}, function() ThreatMeter:ApplyDamageMeterEnabled() end)
+
 	AddCheckbox("DMPETS", false, function() ThreatMeter:ApplyDamageMeterEnabled() end)
 	AddCheckbox("DMPULLBAR", false, function() ThreatMeter:ApplyDamageMeterEnabled() end)
 	AddCategory("LEGACYTHREAT")
@@ -197,6 +216,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 			if TMTAB["DMSHOWCLASSCOLOR"] == nil then TMTAB["DMSHOWCLASSCOLOR"] = true end
 			TMTAB["METERWINDOWVERSION"] = 5
 		end
+
 		if ThreatMeter:GV(TMTAB, "METERWINDOWVERSION", 0) < 6 then
 			if TMTAB["DMDISPLAYVALUE"] == nil then TMTAB["DMDISPLAYVALUE"] = TMTAB["DMNUMBERS"] == 0 and "value" or "value_relative" end
 			if TMTAB["DMNUMBERS"] == 0 then TMTAB["DMNUMBERS"] = 1 end
@@ -204,7 +224,8 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 			if TMTAB["DMPULLBAR"] == nil then TMTAB["DMPULLBAR"] = false end
 			TMTAB["METERWINDOWVERSION"] = 6
 		end
-		ThreatMeter:SetVersion(132117, "0.9.0")
+
+		ThreatMeter:SetVersion(132117, "0.9.1")
 		ThreatMeter:InitSettings()
 		ThreatMeter:CreateMainFrame()
 		ThreatMeter:CreateLegacyFrame()

@@ -4,9 +4,13 @@ local raidUnits = {"player", "pet"}
 local groupHighest = {}
 local groupLowest = {}
 local groupThreat = {}
+for i = 1, 4 do
+	partyUnits[#partyUnits + 1] = "party" .. i
+end
 
-for i = 1, 4 do partyUnits[#partyUnits + 1] = "party" .. i end
-for i = 1, 40 do raidUnits[#raidUnits + 1] = "raid" .. i end
+for i = 1, 40 do
+	raidUnits[#raidUnits + 1] = "raid" .. i
+end
 
 local function RGBToHex(r, g, b)
 	return format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
@@ -29,8 +33,13 @@ function ThreatMeter:GetLegacyUnitThreat(unit, observer)
 	if self:IsSafe(isTanking) and isTanking == true then return 100, rawThreat end
 	if not self:IsSafe(status) or type(status) ~= "number" then
 		local statusOk, fallbackStatus = pcall(UnitThreatSituation, observer, unit)
-		if statusOk and self:IsSafe(fallbackStatus) and type(fallbackStatus) == "number" then status = fallbackStatus else status = nil end
+		if statusOk and self:IsSafe(fallbackStatus) and type(fallbackStatus) == "number" then
+			status = fallbackStatus
+		else
+			status = nil
+		end
 	end
+
 	if status == nil then return nil end
 	if status >= 2 then return 100, rawThreat end
 	if status == 1 then return 90, rawThreat end
@@ -48,6 +57,7 @@ function ThreatMeter:TestLegacyThreat(unit, highest, lowest, observer, highestTh
 		elseif percent == highest and rawThreat ~= nil and (highestThreat == nil or rawThreat > highestThreat) then
 			highestThreat = rawThreat
 		end
+
 		lowest = math.min(lowest, percent)
 	end
 	return highest, lowest, highestThreat
@@ -58,6 +68,7 @@ function ThreatMeter:UpdateLegacyBar(row, low, high, r, g, b, inCombat, show, th
 		row:Hide()
 		return
 	end
+
 	row:Show()
 	if inCombat then
 		row.bar:SetShown(TMTAB["LEGACYDISPLAYBAR"] ~= false)
@@ -96,6 +107,7 @@ function ThreatMeter:UpdateLegacyThreatLogic()
 		self.legacyFrame:Hide()
 		return
 	end
+
 	local highest = 0
 	local lowest = 100
 	local highestThreat
@@ -105,7 +117,11 @@ function ThreatMeter:UpdateLegacyThreatLogic()
 		local unit = nameplate.unitToken or nameplate.UnitFrame and nameplate.UnitFrame.unit
 		highest, lowest, highestThreat = self:TestLegacyThreat(unit, highest, lowest, nil, highestThreat)
 	end
-	for i = 1, 8 do highest, lowest, highestThreat = self:TestLegacyThreat("boss" .. i, highest, lowest, nil, highestThreat) end
+
+	for i = 1, 8 do
+		highest, lowest, highestThreat = self:TestLegacyThreat("boss" .. i, highest, lowest, nil, highestThreat)
+	end
+
 	local inRaid = IsInRaid()
 	if inRaid then
 		for i = 1, GetNumGroupMembers() do
@@ -118,28 +134,30 @@ function ThreatMeter:UpdateLegacyThreatLogic()
 			highest, lowest, highestThreat = self:TestLegacyThreat("partypet" .. i .. "target", highest, lowest, nil, highestThreat)
 		end
 	end
+
 	for _, unit in ipairs({"target", "targettarget", "pettarget", "focustarget", "mouseover", "mouseovertarget"}) do
 		highest, lowest, highestThreat = self:TestLegacyThreat(unit, highest, lowest, nil, highestThreat)
 	end
+
 	if TMTAB["LEGACYSHOWHIGHESTTHREAT"] ~= false then
 		local units = inRaid and raidUnits or partyUnits
 		local highestUnitPercent = 0
 		for _, unit in ipairs(units) do
 			groupHighest[unit], groupLowest[unit], groupThreat[unit] = 0, 100, nil
-			if self:SafeUnitExists(unit) then
-				groupHighest[unit], groupLowest[unit], groupThreat[unit] = self:TestLegacyThreat("target", 0, 100, unit)
-			end
+			if self:SafeUnitExists(unit) then groupHighest[unit], groupLowest[unit], groupThreat[unit] = self:TestLegacyThreat("target", 0, 100, unit) end
 			if groupHighest[unit] > highestUnitPercent then
 				highestUnitPercent = groupHighest[unit]
 				highestUnit = unit
 			end
 		end
 	end
+
 	local inCombat = self:SafeUnitInCombat("player") or highestUnit and self:SafeUnitInCombat(highestUnit)
 	if not inCombat and TMTAB["LEGACYSHOWOUTSIDE"] == false then
 		self.legacyFrame:Hide()
 		return
 	end
+
 	self.legacyFrame:Show()
 	if inCombat then
 		local r, g, b = GetThreatColor(highest)
@@ -151,6 +169,8 @@ function ThreatMeter:UpdateLegacyThreatLogic()
 		self:UpdateLegacyBar(self.legacyRows[1], 0, 0, 0, 1, 0, false, true)
 		self:UpdateLegacyBar(self.legacyRows[2], 0, 0, 0, 1, 0, false, false)
 	end
+
+	if self.legacyRows[2]:IsShown() and (highestUnit == "player" or self.legacyRows[1].text:GetText() == self.legacyRows[2].text:GetText()) then self.legacyRows[2]:Hide() end
 	local showSecond = self.legacyRows[2]:IsShown()
 	self.legacyRows[1]:SetPoint("CENTER", self.legacyFrame, "CENTER", 0, showSecond and -16 or 0)
 	self.legacyRows[2]:SetPoint("CENTER", self.legacyFrame, "CENTER", 0, 16)
@@ -180,10 +200,15 @@ function ThreatMeter:CreateLegacyRow(parent)
 	row.high:SetPoint("BOTTOMRIGHT", -4, 4)
 	row.high:SetMinMaxValues(0, 100)
 	row.high:SetStatusBarTexture("Interface\\AddOns\\ThreatMeter\\media\\bar2")
-	row.border = row:CreateTexture(nil, "BORDER")
+	row.low:GetStatusBarTexture():SetHorizTile(false)
+	row.high:GetStatusBarTexture():SetHorizTile(false)
+	row.overlay = CreateFrame("Frame", nil, row)
+	row.overlay:SetAllPoints()
+	row.overlay:SetFrameLevel(row.bar:GetFrameLevel() + 10)
+	row.border = row.overlay:CreateTexture(nil, "BORDER")
 	row.border:SetAllPoints()
 	row.border:SetTexture("Interface\\AddOns\\ThreatMeter\\media\\bar-border")
-	row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	row.text = row.overlay:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	row.text:SetPoint("CENTER")
 	C_Timer.After(0, function() ThreatMeter:SetFontSize(row.text, 24, "OUTLINE") end)
 	return row
@@ -194,6 +219,7 @@ function ThreatMeter:ApplyLegacyLock()
 	local locked = TMTAB["LEGACYLOCKED"] == true
 	self.legacyFrame:SetMovable(not locked)
 	self.legacyFrame:EnableMouse(not locked)
+	if self.legacyLock then self.legacyLock:SetShown(not locked) end
 end
 
 function ThreatMeter:SetLegacyScale(value)
@@ -207,21 +233,49 @@ function ThreatMeter:CreateLegacyFrame()
 	self.legacyFrame:SetClampedToScreen(true)
 	self.legacyFrame:RegisterForDrag("LeftButton")
 	self.legacyFrame:SetScript("OnDragStart", function(frame)
-		if TMTAB["LEGACYLOCKED"] ~= true and not InCombatLockdown() then frame:StartMoving() end
+		if TMTAB["LEGACYLOCKED"] == true then return end
+		if InCombatLockdown() then
+			ThreatMeter:MSG(ThreatMeter:Trans("LID_CANTBEMOVEDINCOMBAT"))
+			return
+		end
+
+		ThreatMeter:ShowGrid(frame)
+		frame:StartMoving()
 	end)
+
 	self.legacyFrame:SetScript("OnDragStop", function(frame)
+		ThreatMeter:HideGrid(frame)
 		frame:StopMovingOrSizing()
 		local point, _, relativePoint, x, y = frame:GetPoint()
+		x = ThreatMeter:Grid(x)
+		y = ThreatMeter:Grid(y)
 		ThreatMeter:SV(TMTAB, "TMLegacyFrame", {point, "UIParent", relativePoint, x, y})
+		frame:ClearAllPoints()
+		frame:SetPoint(point, "UIParent", relativePoint, x, y)
 	end)
+
 	local point, relativeTo, relativePoint, x, y = unpack(ThreatMeter:GV(TMTAB, "TMLegacyFrame", {}))
 	if point then
 		self.legacyFrame:ClearAllPoints()
 		self.legacyFrame:SetPoint(point, relativeTo, relativePoint, x, y)
 	end
+
 	self.legacyRows = {self:CreateLegacyRow(self.legacyFrame), self:CreateLegacyRow(self.legacyFrame)}
 	self.legacyRows[1]:SetPoint("CENTER")
 	self.legacyRows[2]:SetPoint("CENTER")
+	self.legacyLock = CreateFrame("Button", nil, self.legacyFrame)
+	self.legacyLock:SetSize(40, 40)
+	self.legacyLock:SetPoint("LEFT", self.legacyFrame, "RIGHT", 30, 0)
+	self.legacyLock:SetNormalTexture("Interface\\Buttons\\LockButton-Locked-Up")
+	self.legacyLock:SetScript("OnClick", function()
+		TMTAB["LEGACYLOCKED"] = true
+		ThreatMeter:ApplyLegacyLock()
+	end)
+
+	self.legacyLock.text = self.legacyLock:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	self.legacyLock.text:SetPoint("LEFT", self.legacyLock, "RIGHT", 0, 0)
+	self.legacyLock.text:SetText(ThreatMeter:Trans("LID_ThreatMeterText"))
+	C_Timer.After(0, function() ThreatMeter:SetFontSize(self.legacyLock.text, 14, "OUTLINE") end)
 	self:ApplyLegacyLock()
 	self:SetLegacyScale(ThreatMeter:GV(TMTAB, "LEGACYSCALE", 1))
 	self:UpdateLegacyThreatLogic()
