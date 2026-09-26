@@ -225,7 +225,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 			TMTAB["METERWINDOWVERSION"] = 6
 		end
 
-		ThreatMeter:SetVersion(132117, "0.7.1")
+		ThreatMeter:SetVersion(132117, "0.7.2")
 		ThreatMeter:InitSettings()
 		ThreatMeter:CreateMainFrame()
 		ThreatMeter:CreateLegacyFrame()

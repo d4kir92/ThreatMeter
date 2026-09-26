@@ -796,7 +796,7 @@ function ThreatMeter:CreateMainFrame()
 		end
 	end)
 	self.frame:SetScript("OnDragStart", function(frame)
-		if not ThreatMeter:GV(TMTAB, "lockedText", true) and not InCombatLockdown() then frame:StartMoving() end
+		if ThreatMeter.editModeActive and not InCombatLockdown() then frame:StartMoving() end
 	end)
 	self.frame:SetScript("OnDragStop", function(frame)
 		frame:StopMovingOrSizing()
