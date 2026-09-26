@@ -67,9 +67,16 @@ local function GetBarSpacing()
 end
 
 local function FormatThreat(value)
+	local numbers = ThreatMeter:GV(TMTAB, "DMNUMBERS", 1)
+	if numbers == 2 then
+		local rounded = math.floor(value + 0.5)
+		if type(BreakUpLargeNumbers) == "function" then return BreakUpLargeNumbers(rounded) end
+		return tostring(rounded)
+	end
+	local pattern = numbers == 0 and "%.0f" or "%.1f"
 	local absValue = math.abs(value)
-	if absValue >= 1000000 then return format("%.1fm", value / 1000000) end
-	if absValue >= 1000 then return format("%.1fk", value / 1000) end
+	if absValue >= 1000000 then return format(pattern .. "m", value / 1000000) end
+	if absValue >= 1000 then return format(pattern .. "k", value / 1000) end
 	return tostring(math.floor(value + 0.5))
 end
 
@@ -84,95 +91,225 @@ local function TrySetAtlas(region, method, atlas, useAtlasSize)
 	return pcall(region[method], region, atlas, useAtlasSize)
 end
 
-function ThreatMeter:GetThreatEntry(unit)
-	if not ThreatMeter:SafeUnitExists(unit) then return nil end
-	local nameOk, name = pcall(UnitName, unit)
-	if not nameOk or not ThreatMeter:IsSafe(name) or type(name) ~= "string" then return nil end
-	local classOk, _, classToken = pcall(UnitClass, unit)
-	if not classOk or not ThreatMeter:IsSafe(classToken) or type(classToken) ~= "string" then classToken = nil end
-	local ok, isTanking, status, scaled, _, rawThreat = pcall(UnitDetailedThreatSituation, unit, "target")
-	if not ok then return nil end
-	if not ThreatMeter:IsSafe(status) or type(status) ~= "number" then status = nil end
-	if not ThreatMeter:IsSafe(scaled) or type(scaled) ~= "number" then scaled = nil end
-	if not ThreatMeter:IsSafe(rawThreat) or type(rawThreat) ~= "number" then rawThreat = nil end
-	local tanking = ThreatMeter:IsSafe(isTanking) and isTanking == true
-	if status == nil then
-		local statusOk, fallbackStatus = pcall(UnitThreatSituation, unit, "target")
-		if statusOk and ThreatMeter:IsSafe(fallbackStatus) and type(fallbackStatus) == "number" then status = fallbackStatus end
-	end
-	local targetTarget = ThreatMeter:SafeUnitIsUnit("targettarget", unit)
-	if scaled == nil and rawThreat == nil and status == nil and not tanking and not targetTarget then return nil end
-	local barValue = 0
-	if scaled ~= nil then
-		barValue = Clamp(scaled, 0, 100)
-	elseif tanking or targetTarget or status and status >= 2 then
-		barValue = 100
-	elseif status == 1 then
-		barValue = 90
-	elseif status == 0 then
-		barValue = 25
-	end
-	return {
-		unit = unit,
-		name = name,
-		classToken = classToken,
-		isPlayer = ThreatMeter:SafeUnitIsUnit(unit, "player"),
-		isTanking = tanking,
-		isAggroHolder = targetTarget or tanking or status and status >= 2,
-		status = status,
-		scaled = scaled,
-		rawThreat = rawThreat,
-		barValue = barValue
-	}
+local function PublicCall(fn, ...)
+	if type(fn) ~= "function" then return nil end
+	local ok, value = pcall(fn, ...)
+	if ok and not ThreatMeter:IsSecret(value) then return value end
+	return nil
 end
 
-function ThreatMeter:GetThreatUnits()
-	local units = {}
-	local function Add(unit)
-		if ThreatMeter:SafeUnitExists(unit) then units[#units + 1] = unit end
+local function PublicNumber(value)
+	if ThreatMeter:IsSecret(value) or type(value) ~= "number" then return nil end
+	if value ~= value or value == math.huge or value == -math.huge then return nil end
+	return value
+end
+
+local function PetOwnerToken(unit)
+	if unit == "pet" then return "player" end
+	local party = unit:match("^partypet(%d+)$")
+	if party then return "party" .. party end
+	local raid = unit:match("^raidpet(%d+)$")
+	if raid then return "raid" .. raid end
+	return nil
+end
+
+local function PlayerClass(unit)
+	if not unit or PublicCall(UnitExists, unit) ~= true then return nil end
+	local ok, _, classToken = pcall(UnitClass, unit)
+	if ok and not ThreatMeter:IsSecret(classToken) and type(classToken) == "string" then return classToken end
+	return nil
+end
+
+function ThreatMeter:GetThreatAppearance(unit, roster)
+	local owner = PetOwnerToken(unit)
+	if owner then return PlayerClass(owner), true end
+	if unit == "player" or unit:match("^party%d+$") or unit:match("^raid%d+$") or PublicCall(UnitIsPlayer, unit) == true then return PlayerClass(unit), false end
+	for _, token in ipairs(roster or {}) do
+		owner = PetOwnerToken(token)
+		if owner and PublicCall(UnitIsUnit, unit, token) == true then return PlayerClass(owner), true end
 	end
+	if PublicCall(UnitIsPlayer, unit) == false and PublicCall(UnitPlayerControlled, unit) == true then return nil, true end
+	return nil, false
+end
+
+function ThreatMeter:ResolveThreatSource(unit)
+	if PublicCall(UnitExists, unit) ~= true then return nil end
+	if PublicCall(UnitCanAttack, "player", unit) == true then return unit end
+	local nextTarget = unit .. "target"
+	if PublicCall(UnitCanAssist, "player", unit) == true and PublicCall(UnitExists, nextTarget) == true and PublicCall(UnitCanAttack, "player", nextTarget) == true then return nextTarget end
+	return nil
+end
+
+local function AddGroupUnit(result, pets, token, pet)
+	if PublicCall(UnitExists, token) == true then result[#result + 1] = token end
+	if pets and PublicCall(UnitExists, pet) == true then result[#result + 1] = pet end
+end
+
+function ThreatMeter:GetThreatGroupTokens(pets, result)
+	result = result or {}
+	for i = #result, 1, -1 do result[i] = nil end
 	if IsInRaid() then
-		for i = 1, GetNumGroupMembers() do Add("raid" .. i) end
-	elseif IsInGroup() then
-		Add("player")
-		for i = 1, GetNumSubgroupMembers() do Add("party" .. i) end
+		for i = 1, GetNumGroupMembers() do AddGroupUnit(result, pets, "raid" .. i, "raidpet" .. i) end
 	else
-		Add("player")
+		AddGroupUnit(result, pets, "player", "pet")
+		for i = 1, GetNumSubgroupMembers() do AddGroupUnit(result, pets, "party" .. i, "partypet" .. i) end
 	end
-	return units
+	return result
 end
 
-local function ThreatSort(a, b)
-	if a.isAggroHolder ~= b.isAggroHolder then return a.isAggroHolder end
-	if a.rawThreat ~= nil or b.rawThreat ~= nil then
-		if a.rawThreat == nil then return false end
-		if b.rawThreat == nil then return true end
-		if a.rawThreat ~= b.rawThreat then return a.rawThreat > b.rawThreat end
+local function AddThreatCandidate(result, pets, token)
+	if not token or PublicCall(UnitExists, token) ~= true then return end
+	local isPlayer = PublicCall(UnitIsPlayer, token)
+	if isPlayer == nil then return end
+	if not isPlayer and (not pets or PublicCall(UnitPlayerControlled, token) ~= true) then return end
+	if PublicCall(UnitPlayerOrPetInRaid, token) == true or PublicCall(UnitPlayerOrPetInParty, token) == true then return end
+	for _, existing in ipairs(result) do
+		if existing == token then return end
+		local same = PublicCall(UnitIsUnit, existing, token)
+		if same == nil or same then return end
 	end
-	if a.barValue ~= b.barValue then return a.barValue > b.barValue end
-	if a.isPlayer ~= b.isPlayer then return a.isPlayer end
-	return a.name < b.name
+	result[#result + 1] = token
+end
+
+function ThreatMeter:GetThreatTokens(pets, source)
+	local result = self:GetThreatGroupTokens(pets, self.threatTokens)
+	self.threatTokens = result
+	AddThreatCandidate(result, pets, source .. "target")
+	AddThreatCandidate(result, pets, "mouseover")
+	if C_NamePlate and type(C_NamePlate.GetNamePlates) == "function" then
+		local candidates = self.threatCandidates or {}
+		self.threatCandidates = candidates
+		for i = #candidates, 1, -1 do candidates[i] = nil end
+		local ok, plates = pcall(C_NamePlate.GetNamePlates)
+		if ok and type(plates) == "table" then
+			for _, plate in ipairs(plates) do
+				local token = plate.namePlateUnitToken
+				if type(token) == "string" and not self:IsSecret(token) then candidates[#candidates + 1] = token end
+			end
+		end
+		table.sort(candidates)
+		for _, token in ipairs(candidates) do
+			AddThreatCandidate(result, pets, token)
+			AddThreatCandidate(result, pets, token .. "target")
+		end
+	end
+	return result
+end
+
+local function CompareThreat(a, b)
+	if a.priority ~= b.priority then return a.priority > b.priority end
+	if a.sortTier ~= b.sortTier then return a.sortTier > b.sortTier end
+	if a.sortValue ~= b.sortValue then return a.sortValue > b.sortValue end
+	return a.order < b.order
+end
+
+function ThreatMeter:ReadThreat(tokens, source)
+	local rows = self.threatRows or {}
+	local pool = self.threatPool or {}
+	self.threatRows, self.threatPool = rows, pool
+	for i = #rows, 1, -1 do rows[i] = nil end
+	local allRaw, allRelative, allScaled = true, true, true
+	for _, token in ipairs(tokens) do
+		local ok, tank, status, scaled, relative, raw = pcall(UnitDetailedThreatSituation, token, source)
+		if not ok then tank, status, scaled, relative, raw = nil, nil, nil, nil, nil end
+		local publicStatus = PublicNumber(status)
+		if not publicStatus then publicStatus = PublicNumber(PublicCall(UnitThreatSituation, token, source)) end
+		local victim = PublicCall(UnitIsUnit, token, source .. "target") == true
+		local tanking = not self:IsSecret(tank) and tank == true
+		local priority = victim and 3 or (tanking and 2 or (publicStatus and publicStatus >= 2 and 1 or 0))
+		local hasPercent = type(scaled) == "number" or type(relative) == "number"
+		local hasData = hasPercent or type(raw) == "number" or publicStatus ~= nil
+		if hasData or priority > 0 then
+			local slot = #rows + 1
+			local row = pool[slot] or {}
+			pool[slot] = row
+			for key in pairs(row) do row[key] = nil end
+			row.unit, row.publicStatus = token, publicStatus
+			row.percent, row.relative, row.threat = scaled, relative, raw
+			row.order, row.priority, row.holdsAggro = slot, priority, priority > 0
+			row.aggroOnly = not hasPercent and type(raw) ~= "number" and priority > 0
+			row.rawKey, row.relativeKey, row.scaledKey = PublicNumber(raw), PublicNumber(relative), PublicNumber(scaled)
+			if not row.aggroOnly then
+				allRaw = allRaw and row.rawKey ~= nil
+				allRelative = allRelative and row.relativeKey ~= nil
+				allScaled = allScaled and row.scaledKey ~= nil
+			end
+			if row.holdsAggro then
+				row.displayPercent = 100
+			elseif type(relative) == "number" then
+				row.displayPercent = relative
+			elseif type(scaled) == "number" then
+				row.displayPercent = scaled
+				row.pullPercent = true
+			end
+			rows[#rows + 1] = row
+		end
+	end
+	for i = #rows + 1, #pool do
+		for key in pairs(pool[i]) do pool[i][key] = nil end
+	end
+	local metric = allRaw and "rawKey" or (allRelative and "relativeKey" or (allScaled and "scaledKey" or nil))
+	for _, row in ipairs(rows) do
+		if metric then
+			row.sortTier, row.sortValue = 1, row[metric] or 0
+		elseif row.rawKey ~= nil then
+			row.sortTier, row.sortValue = 3, row.rawKey
+		elseif row.relativeKey ~= nil then
+			row.sortTier, row.sortValue = 2, row.relativeKey
+		elseif row.scaledKey ~= nil then
+			row.sortTier, row.sortValue = 1, row.scaledKey
+		else
+			row.sortTier, row.sortValue = 0, row.publicStatus or -1
+		end
+	end
+	table.sort(rows, CompareThreat)
+	local baseline = rows[1] and rows[1].holdsAggro and rows[1].rawKey
+	if baseline and baseline > 0 then
+		for _, row in ipairs(rows) do
+			if type(row.displayPercent) ~= "number" and row.rawKey and row.rawKey >= 0 then
+				row.displayPercent = PublicNumber(row.rawKey / baseline * 100)
+			end
+		end
+	end
+	return rows
+end
+
+function ThreatMeter:GetPullEntry(me)
+	if not me or me.holdsAggro then return nil end
+	local raw, scaled = PublicNumber(me.rawKey), PublicNumber(me.scaledKey)
+	if not raw or not scaled or raw <= 0 or scaled <= 0 then return nil end
+	local threshold = PublicNumber(raw * 100 / scaled)
+	if not threshold then return nil end
+	local entry = self.pullEntry or {}
+	self.pullEntry = entry
+	for key in pairs(entry) do entry[key] = nil end
+	entry.pull = true
+	entry.name = ThreatMeter:Trans("LID_PULLAGGRO")
+	entry.threat, entry.rawKey = threshold, threshold
+	entry.displayPercent, entry.percent, entry.scaledKey, entry.pullPercent = 100, 100, 100, true
+	return entry
 end
 
 function ThreatMeter:GetThreatData()
-	if not ThreatMeter:SafeUnitExists("target") then return {} end
-	local attackOk, canAttack = pcall(UnitCanAttack, "player", "target")
-	if not attackOk or not ThreatMeter:IsSafe(canAttack) or canAttack ~= true then return {} end
-	local data = {}
-	for _, unit in ipairs(ThreatMeter:GetThreatUnits()) do
-		local entry = ThreatMeter:GetThreatEntry(unit)
-		if entry and (entry.isPlayer or TMTAB["SHOWHIGHESTTHREAT"]) then data[#data + 1] = entry end
+	if type(UnitDetailedThreatSituation) ~= "function" then return {} end
+	local source = self:ResolveThreatSource("target")
+	if not source then return {} end
+	local pets = ThreatMeter:GV(TMTAB, "DMPETS", false) == true
+	local data = self:ReadThreat(self:GetThreatTokens(pets, source), source)
+	local me
+	for _, entry in ipairs(data) do
+		local ok, name = pcall(UnitName, entry.unit)
+		if not ok or not self:IsSecret(name) and type(name) ~= "string" then name = _G.UNKNOWNOBJECT or entry.unit end
+		entry.name = name
+		entry.classToken, entry.isPet = self:GetThreatAppearance(entry.unit, self.threatTokens)
+		entry.isPlayer = PublicCall(UnitIsUnit, entry.unit, "player") == true
+		if entry.isPlayer and not me then me = entry end
 	end
-	table.sort(data, ThreatSort)
+	if ThreatMeter:GV(TMTAB, "DMPULLBAR", false) == true then
+		local pull = self:GetPullEntry(me)
+		if pull then data[#data + 1] = pull end
+	end
 	return data
-end
-
-function ThreatMeter:GetThreatPercentText(entry)
-	if entry.scaled ~= nil then return format("%.0f%%", entry.scaled) end
-	if entry.isAggroHolder then return ThreatMeter:Trans("LID_TANKING") end
-	if entry.status == 1 then return "~90%" end
-	if entry.status == 0 then return "~25%" end
-	return "—"
 end
 
 local function SetClassIcon(texture, classToken)
@@ -295,6 +432,65 @@ function ThreatMeter:RefreshThreatLayout()
 	end
 end
 
+local function SetRowIcon(texture, entry)
+	if entry.pull then
+		texture:SetTexture(nil)
+		return false
+	end
+	if entry.isPet then
+		texture:SetTexture(132161)
+		texture:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+		return true
+	end
+	return SetClassIcon(texture, entry.classToken)
+end
+
+local function SetBarValue(bar, value)
+	if TMTAB["DISPLAYBAR"] == false or type(value) ~= "number" or not pcall(bar.SetValue, bar, value) then bar:SetValue(0) end
+end
+
+function ThreatMeter:SetThreatRowValue(row, entry)
+	local mode = ThreatMeter:GV(TMTAB, "DMDISPLAYVALUE", "value_relative")
+	local showValue = mode == "value" or mode == "value_relative" or mode == "value_pull"
+	local showPercent = mode == "relative" or mode == "pull" or mode == "value_relative" or mode == "value_pull"
+	local value = entry.displayPercent
+	local percent = value
+	if mode == "pull" or mode == "value_pull" then
+		percent = entry.percent
+	elseif entry.pullPercent then
+		percent = nil
+	end
+	if entry.pull then value, percent = 100, 100 end
+	if entry.aggroOnly then
+		SetBarValue(row.bar, 100)
+		row.value:SetText((showValue or showPercent) and ThreatMeter:Trans("LID_TANKING") or "")
+		return
+	end
+	SetBarValue(row.bar, value)
+	local raw
+	if showValue then raw = entry.threat end
+	local rawFormat, rawText
+	if type(raw) == "number" then
+		if self:IsSecret(raw) then
+			rawFormat, rawText = "%.0f", raw
+		elseif PublicNumber(raw) then
+			rawFormat, rawText = "%s", FormatThreat(raw)
+		end
+	end
+	if not showPercent or entry.pull and rawFormat then percent = nil end
+	local ok = true
+	if rawFormat and type(percent) == "number" then
+		ok = pcall(row.value.SetFormattedText, row.value, rawFormat .. " (%.0f%%)", rawText, percent)
+	elseif rawFormat then
+		ok = pcall(row.value.SetFormattedText, row.value, rawFormat, rawText)
+	elseif type(percent) == "number" then
+		ok = pcall(row.value.SetFormattedText, row.value, "%.0f%%", percent)
+	else
+		row.value:SetText((showValue or showPercent) and "?" or "")
+	end
+	if not ok then row.value:SetText("?") end
+end
+
 function ThreatMeter:UpdateThreatRows(data)
 	self.currentThreatData = data
 	self:EnsureThreatRows(math.min(#data, 40))
@@ -303,21 +499,16 @@ function ThreatMeter:UpdateThreatRows(data)
 		local entry = data[i]
 		if entry and i <= self.visibleRowCount then
 			local r, g, b = 0.18, 0.55, 0.78
-			if ThreatMeter:GV(TMTAB, "DMSHOWCLASSCOLOR", true) then r, g, b = GetClassColor(entry.classToken) end
-			row.bar:SetValue(TMTAB["DISPLAYBAR"] == false and 0 or entry.barValue)
-			row.bar:SetStatusBarColor(r, g, b, 0.9)
-			row.name:SetText(i .. ". " .. entry.name)
-			row.name:SetTextColor(1, 1, 1)
-			local percentText = ThreatMeter:GetThreatPercentText(entry)
-			local numbers = ThreatMeter:GV(TMTAB, "DMNUMBERS", 1)
-			if entry.rawThreat ~= nil and numbers == 0 then
-				row.value:SetText(FormatThreat(entry.rawThreat))
-			elseif entry.rawThreat ~= nil then
-				row.value:SetText(FormatThreat(entry.rawThreat) .. " (" .. percentText .. ")")
-			else
-				row.value:SetText(percentText)
+			if entry.pull then
+				r, g, b = 0, 0.55, 0
+			elseif ThreatMeter:GV(TMTAB, "DMSHOWCLASSCOLOR", true) then
+				r, g, b = GetClassColor(entry.classToken)
 			end
-			row.hasIcon = SetClassIcon(row.icon, entry.classToken)
+			row.bar:SetStatusBarColor(r, g, b, 0.9)
+			if not pcall(row.name.SetFormattedText, row.name, "%d. %s", i, entry.name) then row.name:SetText(i .. ". ?") end
+			row.name:SetTextColor(1, 1, 1)
+			self:SetThreatRowValue(row, entry)
+			row.hasIcon = SetRowIcon(row.icon, entry)
 			self:ApplyThreatRowStyle(row)
 		end
 	end
@@ -328,8 +519,8 @@ function ThreatMeter:UpdateThreatLogic()
 	if self.editModeActive then
 		self.frame:Show()
 		self:UpdateThreatRows({
-			{name = "Player", classToken = "WARRIOR", isPlayer = true, isAggroHolder = true, status = 3, scaled = 100, rawThreat = 17521, barValue = 100},
-			{name = "Threat", classToken = "MAGE", isPlayer = false, isAggroHolder = false, status = 1, scaled = 76, rawThreat = 13280, barValue = 76}
+			{name = "Player", classToken = "WARRIOR", isPlayer = true, holdsAggro = true, percent = 100, relative = 100, threat = 17521, displayPercent = 100},
+			{name = "Threat", classToken = "MAGE", isPlayer = false, holdsAggro = false, percent = 69, relative = 76, threat = 13280, displayPercent = 76}
 		})
 		return
 	end
@@ -352,8 +543,8 @@ function ThreatMeter:UpdateThreatLogic()
 	local data = ThreatMeter:GetThreatData()
 	if TMDebug then
 		data = {
-			{name = "Tank", classToken = "WARRIOR", isPlayer = false, isAggroHolder = true, status = 3, scaled = 100, rawThreat = 12500, barValue = 100},
-			{name = "Player", classToken = "MAGE", isPlayer = true, isAggroHolder = false, status = 1, scaled = 82, rawThreat = 10250, barValue = 82}
+			{name = "Tank", classToken = "WARRIOR", isPlayer = false, holdsAggro = true, percent = 100, relative = 100, threat = 12500, displayPercent = 100},
+			{name = "Player", classToken = "MAGE", isPlayer = true, holdsAggro = false, percent = 75, relative = 82, threat = 10250, displayPercent = 82}
 		}
 	end
 	ThreatMeter:UpdateThreatRows(data)
