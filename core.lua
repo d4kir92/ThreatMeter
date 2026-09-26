@@ -25,10 +25,11 @@ end
 function ThreatMeter:UnitThreat(unit, target)
 	target = target or "player"
 	if not ThreatMeter:SafeUnitExists(unit) then return nil end
-	local ok, isTanking, status, scaled = pcall(UnitDetailedThreatSituation, target, unit)
+	local ok, isTanking, status, scaled, _, rawThreat = pcall(UnitDetailedThreatSituation, target, unit)
 	if not ok then return nil end
-	if ThreatMeter:IsSafe(scaled) and type(scaled) == "number" then return scaled end
-	if ThreatMeter:IsSafe(isTanking) and isTanking == true then return 100 end
+	if not ThreatMeter:IsSafe(rawThreat) or type(rawThreat) ~= "number" then rawThreat = nil end
+	if ThreatMeter:IsSafe(scaled) and type(scaled) == "number" then return scaled, rawThreat end
+	if ThreatMeter:IsSafe(isTanking) and isTanking == true then return 100, rawThreat end
 	if not ThreatMeter:IsSafe(status) or type(status) ~= "number" then
 		local statusOk, fallbackStatus = pcall(UnitThreatSituation, target, unit)
 		if statusOk and ThreatMeter:IsSafe(fallbackStatus) and type(fallbackStatus) == "number" then
@@ -38,21 +39,26 @@ function ThreatMeter:UnitThreat(unit, target)
 		end
 	end
 	if status == nil then return nil end
-	if status >= 2 then return 100 end
-	if status == 1 then return 90 end
-	if status == 0 then return 25 end
+	if status >= 2 then return 100, rawThreat end
+	if status == 1 then return 90, rawThreat end
+	if status == 0 then return 25, rawThreat end
 	return nil
 end
 
-function ThreatMeter:TestThreat(unit, highestTP, lowestTP, target)
-	if not unit or not ThreatMeter:SafeUnitExists(unit) then return highestTP, lowestTP end
+function ThreatMeter:TestThreat(unit, highestTP, lowestTP, target, highestThreat)
+	if not unit or not ThreatMeter:SafeUnitExists(unit) then return highestTP, lowestTP, highestThreat end
 	target = target or "player"
-	local threatPercentage = ThreatMeter:UnitThreat(unit, target)
+	local threatPercentage, rawThreat = ThreatMeter:UnitThreat(unit, target)
 	if threatPercentage then
-		highestTP = math.max(highestTP, threatPercentage)
+		if threatPercentage > highestTP then
+			highestTP = threatPercentage
+			highestThreat = rawThreat
+		elseif threatPercentage == highestTP and rawThreat ~= nil and (highestThreat == nil or rawThreat > highestThreat) then
+			highestThreat = rawThreat
+		end
 		lowestTP = math.min(lowestTP, threatPercentage)
 	end
-	return highestTP, lowestTP
+	return highestTP, lowestTP, highestThreat
 end
 
 local otherUnitsParty = {"player", "pet"}
@@ -67,11 +73,19 @@ end
 
 local tabHighestTP = {}
 local tabLowestTP = {}
+local tabHighestThreat = {}
 local function RGBToHex(r, g, b)
 	return format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
 end
 
-function ThreatMeter:UpdateBar(text, barContainer, barLow, barHigh, barBr, low, high, r, g, b, inCombat, show)
+local function FormatThreat(value)
+	local absValue = math.abs(value)
+	if absValue >= 1000000 then return format("%.1fm", value / 1000000) end
+	if absValue >= 1000 then return format("%.1fk", value / 1000) end
+	return tostring(math.floor(value + 0.5))
+end
+
+function ThreatMeter:UpdateBar(text, barContainer, barLow, barHigh, barBr, low, high, r, g, b, inCombat, show, threat)
 	if TMTAB["DISPLAYBAR"] == nil then TMTAB["DISPLAYBAR"] = true end
 	if show then
 		if inCombat then
@@ -88,14 +102,15 @@ function ThreatMeter:UpdateBar(text, barContainer, barLow, barHigh, barBr, low, 
 				barBr:Hide()
 			end
 
+			local threatText = threat ~= nil and " | " .. FormatThreat(threat) or ""
 			if high <= 0 then
 				text:SetText("|cffffff00" .. ThreatMeter:Trans("LID_INCOMBAT"))
 			elseif high == 100 and low == 100 then
-				text:SetText(format("%s%s", RGBToHex(r, g, b), ThreatMeter:Trans("LID_TANKING")))
+				text:SetText(format("%s%s%s", RGBToHex(r, g, b), ThreatMeter:Trans("LID_TANKING"), threatText))
 			elseif low ~= high then
-				text:SetText(format("%s%0.1f%% - %0.1f%%", RGBToHex(r, g, b), low, high))
+				text:SetText(format("%s%0.1f%% - %0.1f%%%s", RGBToHex(r, g, b), low, high, threatText))
 			else
-				text:SetText(format("%s%0.1f%%", RGBToHex(r, g, b), high))
+				text:SetText(format("%s%0.1f%%%s", RGBToHex(r, g, b), high, threatText))
 			end
 		else
 			barContainer:Hide()
@@ -112,42 +127,44 @@ end
 function ThreatMeter:UpdateThreatLogic()
 	local highestTP = 0
 	local lowestTP = 100
+	local highestThreat = nil
 	local highestUnit = ""
 	for i, nameplate in pairs(C_NamePlate.GetNamePlates()) do
 		local unit = nameplate.unitToken
 		if unit == nil and nameplate.UnitFrame then unit = nameplate.UnitFrame.unit end
-		if unit ~= nil then highestTP, lowestTP = ThreatMeter:TestThreat(nameplate.unitToken or nameplate.UnitFrame.unit, highestTP, lowestTP) end
+		if unit ~= nil then highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat(nameplate.unitToken or nameplate.UnitFrame.unit, highestTP, lowestTP, nil, highestThreat) end
 	end
 
 	for i = 1, 8 do
-		highestTP, lowestTP = ThreatMeter:TestThreat("boss" .. i, highestTP, lowestTP)
+		highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("boss" .. i, highestTP, lowestTP, nil, highestThreat)
 	end
 
 	local inRaid = IsInRaid()
 	if inRaid then
 		for i = 1, GetNumGroupMembers() do
-			highestTP, lowestTP = ThreatMeter:TestThreat("raid" .. i .. "target", highestTP, lowestTP)
-			highestTP, lowestTP = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestTP, lowestTP)
+			highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("raid" .. i .. "target", highestTP, lowestTP, nil, highestThreat)
+			highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("raidpet" .. i .. "target", highestTP, lowestTP, nil, highestThreat)
 		end
 	elseif IsInGroup() then
 		for i = 1, 4 do
-			highestTP, lowestTP = ThreatMeter:TestThreat("party" .. i .. "target", highestTP, lowestTP)
-			highestTP, lowestTP = ThreatMeter:TestThreat("partypet" .. i .. "target", highestTP, lowestTP)
+			highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("party" .. i .. "target", highestTP, lowestTP, nil, highestThreat)
+			highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("partypet" .. i .. "target", highestTP, lowestTP, nil, highestThreat)
 		end
 	end
 
-	highestTP, lowestTP = ThreatMeter:TestThreat("target", highestTP, lowestTP)
-	highestTP, lowestTP = ThreatMeter:TestThreat("targettarget", highestTP, lowestTP)
-	highestTP, lowestTP = ThreatMeter:TestThreat("pettarget", highestTP, lowestTP)
-	highestTP, lowestTP = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP)
-	highestTP, lowestTP = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP)
-	highestTP, lowestTP = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP)
+	highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("target", highestTP, lowestTP, nil, highestThreat)
+	highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("targettarget", highestTP, lowestTP, nil, highestThreat)
+	highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("pettarget", highestTP, lowestTP, nil, highestThreat)
+	highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("focustarget", highestTP, lowestTP, nil, highestThreat)
+	highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("mouseover", highestTP, lowestTP, nil, highestThreat)
+	highestTP, lowestTP, highestThreat = ThreatMeter:TestThreat("mouseovertarget", highestTP, lowestTP, nil, highestThreat)
 	if TMTAB["SHOWHIGHESTTHREAT"] then
 		local otherUnits = inRaid and otherUnitsRaid or otherUnitsParty
 		for x, unit in pairs(otherUnits) do
 			tabHighestTP[unit] = 0
 			tabLowestTP[unit] = 100
-			if ThreatMeter:SafeUnitExists(unit) then tabHighestTP[unit], tabLowestTP[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], unit) end
+			tabHighestThreat[unit] = nil
+			if ThreatMeter:SafeUnitExists(unit) then tabHighestTP[unit], tabLowestTP[unit], tabHighestThreat[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], unit) end
 		end
 
 		local highestUnitTP = 0
@@ -174,7 +191,7 @@ function ThreatMeter:UpdateThreatLogic()
 			b = 0
 		end
 
-		ThreatMeter:UpdateBar(self.text1, self.bar1Container, self.bar1, self.bar1_2, self.bar1Br, lowestTP, highestTP, r, g, b, true, true)
+		ThreatMeter:UpdateBar(self.text1, self.bar1Container, self.bar1, self.bar1_2, self.bar1Br, lowestTP, highestTP, r, g, b, true, true, highestThreat)
 		if tabHighestTP and tabHighestTP[highestUnit] then
 			r = 0
 			g = 1
@@ -194,7 +211,7 @@ function ThreatMeter:UpdateThreatLogic()
 			b = 0
 		end
 
-		ThreatMeter:UpdateBar(self.text2, self.bar2Container, self.bar2, self.bar2_2, self.bar2Br, tabLowestTP[highestUnit], tabHighestTP[highestUnit], r, g, b, true, TMTAB["SHOWHIGHESTTHREAT"] and UnitExists(highestUnit))
+		ThreatMeter:UpdateBar(self.text2, self.bar2Container, self.bar2, self.bar2_2, self.bar2Br, tabLowestTP[highestUnit], tabHighestTP[highestUnit], r, g, b, true, TMTAB["SHOWHIGHESTTHREAT"] and ThreatMeter:SafeUnitExists(highestUnit), tabHighestThreat[highestUnit])
 	elseif not InCombatLockdown() and TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] then
 		ThreatMeter:UpdateBar(self.text1, self.bar1Container, self.bar1, self.bar1_2, self.bar1Br, 0, 0, 0, 1, 0, false, true)
 		ThreatMeter:UpdateBar(self.text2, self.bar2Container, self.bar2, self.bar2_2, self.bar2Br, 0, 0, 0, 1, 0, false, false)
