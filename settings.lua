@@ -22,7 +22,22 @@ end
 
 function ThreatMeter:SetTextScale(val)
 	if self.frame == nil then return end
-	if val and type(val) == "number" then self.frame:SetScale(val) end
+	if val and type(val) == "number" then
+		self.textScale = val
+		if self.header and self.header.title then self:SetFontStringScale(self.header.title, val) end
+		for _, row in ipairs(self.rows or {}) do
+			self:SetFontStringScale(row.name, val)
+			self:SetFontStringScale(row.value, val)
+		end
+	end
+end
+
+function ThreatMeter:ApplyDamageMeterEnabled()
+	if self.UpdateThreatLogic then self:UpdateThreatLogic() end
+end
+
+function ThreatMeter:ApplyLegacyEnabled()
+	if self.UpdateLegacyThreatLogic then self:UpdateLegacyThreatLogic() end
 end
 
 function ThreatMeter:ToggleSettings()
@@ -119,14 +134,16 @@ function ThreatMeter:InitSettings()
 		end
 	end)
 
-	AddCategory("DISPLAY")
-	AddCheckbox("SHOWTEXTOUTSIDEOFCOMBAT", true)
-	AddCheckbox("SHOWHIGHESTTHREAT", true)
-	AddCategory("TEXT", 2)
-	AddCheckbox("lockedText", true, function() ThreatMeter:ToggleText("lockedText CheckBox", true) end)
-	AddSlider("TEXTSCALE", 1, 0.4, 2, 0.1, 1, function(value) ThreatMeter:SetTextScale(value) end)
-	AddCategory("BAR", 2)
-	AddCheckbox("DISPLAYBAR", false)
+	AddCategory("DAMAGEMETERTHREAT")
+	AddCheckbox("SHOWDAMAGEMETERTHREAT", true, function() ThreatMeter:ApplyDamageMeterEnabled() end)
+	AddCategory("LEGACYTHREAT")
+	AddCheckbox("SHOWLEGACYTHREAT", false, function() ThreatMeter:ApplyLegacyEnabled() end)
+	AddCheckbox("LEGACYSHOWOUTSIDE", true, function() ThreatMeter:ApplyLegacyEnabled() end)
+	AddCheckbox("LEGACYSHOWHIGHESTTHREAT", true)
+	AddCategory("LEGACYWINDOW", 2)
+	AddCheckbox("LEGACYLOCKED", false, function() ThreatMeter:ApplyLegacyLock() end)
+	AddSlider("LEGACYSCALE", 1, 0.4, 2, 0.1, 1, function(value) ThreatMeter:SetLegacyScale(value) end)
+	AddCheckbox("LEGACYDISPLAYBAR", true)
 	tmset:ResumeLayout()
 end
 
@@ -135,9 +152,32 @@ eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:SetScript("OnEvent", function(self, event, ...)
 	if event == "PLAYER_LOGIN" then
 		TMTAB = TMTAB or {}
-		ThreatMeter:SetVersion(132117, "0.7.0")
+		local meterWindowVersion = ThreatMeter:GV(TMTAB, "METERWINDOWVERSION", 0)
+		if meterWindowVersion < 5 then
+			TMTAB["DISPLAYBAR"] = true
+			TMTAB["lockedText"] = false
+			if TMTAB["SHOWDAMAGEMETERTHREAT"] == nil then TMTAB["SHOWDAMAGEMETERTHREAT"] = true end
+			if TMTAB["SHOWLEGACYTHREAT"] == nil then TMTAB["SHOWLEGACYTHREAT"] = false end
+			if TMTAB["LEGACYDISPLAYBAR"] == nil then TMTAB["LEGACYDISPLAYBAR"] = true end
+			if TMTAB["LEGACYSHOWOUTSIDE"] == nil then TMTAB["LEGACYSHOWOUTSIDE"] = true end
+			if TMTAB["LEGACYSHOWHIGHESTTHREAT"] == nil then TMTAB["LEGACYSHOWHIGHESTTHREAT"] = true end
+			if TMTAB["LEGACYLOCKED"] == nil then TMTAB["LEGACYLOCKED"] = false end
+			if TMTAB["DMSTYLE"] == nil then TMTAB["DMSTYLE"] = 0 end
+			if TMTAB["DMNUMBERS"] == nil then TMTAB["DMNUMBERS"] = 1 end
+			if TMTAB["DMBARHEIGHT"] == nil then TMTAB["DMBARHEIGHT"] = 25 end
+			if TMTAB["DMPADDING"] == nil then TMTAB["DMPADDING"] = 4 end
+			if TMTAB["DMTRANSPARENCY"] == nil then TMTAB["DMTRANSPARENCY"] = 100 end
+			if meterWindowVersion < 5 then TMTAB["DAMAGEBACKGROUNDALPHA"] = 50 end
+			if TMTAB["DMTEXTSIZE"] == nil then TMTAB["DMTEXTSIZE"] = math.floor(ThreatMeter:GV(TMTAB, "TEXTSCALE", 1) * 100 + 0.5) end
+			if TMTAB["DMVISIBILITY"] == nil then TMTAB["DMVISIBILITY"] = TMTAB["SHOWTEXTOUTSIDEOFCOMBAT"] == false and 1 or 0 end
+			if TMTAB["DMSHOWSPECICON"] == nil then TMTAB["DMSHOWSPECICON"] = true end
+			if TMTAB["DMSHOWCLASSCOLOR"] == nil then TMTAB["DMSHOWCLASSCOLOR"] = true end
+			TMTAB["METERWINDOWVERSION"] = 5
+		end
+		ThreatMeter:SetVersion(132117, "0.9.0")
 		ThreatMeter:InitSettings()
 		ThreatMeter:CreateMainFrame()
+		ThreatMeter:CreateLegacyFrame()
 		ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
 		ThreatMeter:CreateMinimapButton({
 			["name"] = "ThreatMeter",
@@ -155,6 +195,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 			["dbkey"] = "MMBTN"
 		})
 
-		ThreatMeter:SetTextScale(ThreatMeter:GV(TMTAB, "TEXTSCALE", 1))
+		ThreatMeter:SetTextScale(ThreatMeter:GV(TMTAB, "DMTEXTSIZE", 100) / 100)
+		ThreatMeter:SetLegacyScale(ThreatMeter:GV(TMTAB, "LEGACYSCALE", 1))
 	end
 end)
