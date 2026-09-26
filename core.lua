@@ -1,8 +1,18 @@
 local _, ThreatMeter = ...
 local TMDebug = false
+function ThreatMeter:IsSecret(value)
+	if type(_G.issecretvalue) == "function" then return _G.issecretvalue(value) end
+	return false
+end
+
+function ThreatMeter:IsSafe(value)
+	if ThreatMeter:IsSecret(value) then return false end
+	return value ~= nil
+end
+
 function ThreatMeter:SafeUnitExists(unit)
 	local ok, exists = pcall(UnitExists, unit)
-	return ok and exists
+	return ok and ThreatMeter:IsSafe(exists) and exists == true
 end
 
 function ThreatMeter:UnitGUID(unit, target)
@@ -14,7 +24,23 @@ end
 
 function ThreatMeter:UnitThreat(unit, target)
 	target = target or "player"
-	if ThreatMeter:SafeUnitExists(unit) then return select(3, UnitDetailedThreatSituation(target, unit)) end
+	if not ThreatMeter:SafeUnitExists(unit) then return nil end
+	local ok, isTanking, status, scaled = pcall(UnitDetailedThreatSituation, target, unit)
+	if not ok then return nil end
+	if ThreatMeter:IsSafe(scaled) and type(scaled) == "number" then return scaled end
+	if ThreatMeter:IsSafe(isTanking) and isTanking == true then return 100 end
+	if not ThreatMeter:IsSafe(status) or type(status) ~= "number" then
+		local statusOk, fallbackStatus = pcall(UnitThreatSituation, target, unit)
+		if statusOk and ThreatMeter:IsSafe(fallbackStatus) and type(fallbackStatus) == "number" then
+			status = fallbackStatus
+		else
+			status = nil
+		end
+	end
+	if status == nil then return nil end
+	if status >= 2 then return 100 end
+	if status == 1 then return 90 end
+	if status == 0 then return 25 end
 	return nil
 end
 
@@ -121,12 +147,12 @@ function ThreatMeter:UpdateThreatLogic()
 		for x, unit in pairs(otherUnits) do
 			tabHighestTP[unit] = 0
 			tabLowestTP[unit] = 100
-			if UnitExists(unit) then tabHighestTP[unit], tabLowestTP[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], unit) end
+			if ThreatMeter:SafeUnitExists(unit) then tabHighestTP[unit], tabLowestTP[unit] = ThreatMeter:TestThreat("target", tabHighestTP[unit], tabLowestTP[unit], unit) end
 		end
 
 		local highestUnitTP = 0
 		for x, unit in pairs(otherUnits) do
-			if UnitExists(unit) and highestUnitTP < tabHighestTP[unit] then
+			if ThreatMeter:SafeUnitExists(unit) and highestUnitTP < tabHighestTP[unit] then
 				highestUnitTP = tabHighestTP[unit]
 				highestUnit = unit
 			end
