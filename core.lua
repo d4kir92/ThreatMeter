@@ -596,12 +596,12 @@ function ThreatMeter:ApplyDamageMeterCollapsed()
 	if not self.frame then return end
 	local collapsed = TMTAB["DAMAGEMETERCOLLAPSED"] == true
 	if collapsed then
-		TMTAB["DAMAGEEXPANDEDHEIGHT"] = math.max(MIN_HEIGHT, self.frame:GetHeight() or 200)
+		TMTAB["DAMAGEEXPANDEDHEIGHT"] = nil
 		self.frame:SetHeight(HEADER_HEIGHT)
 		self.background:Hide()
 		for _, row in ipairs(self.rows) do row:Hide() end
 	else
-		self.frame:SetHeight(ThreatMeter:GV(TMTAB, "DAMAGEEXPANDEDHEIGHT", ThreatMeter:GV(TMTAB, "TMFrameHeight", 200)))
+		self.frame:SetHeight(math.max(MIN_HEIGHT, ThreatMeter:GV(TMTAB, "TMFrameHeight", 200)))
 		self.background:Show()
 		self:RefreshThreatLayout()
 	end

@@ -211,6 +211,75 @@ function ThreatMeter:SetDamageMeterEditModeActive(active)
 	end
 end
 
+local SNAP_RANGE = 8
+
+local function GetScaledRect(frame)
+	local left, bottom, width, height = frame:GetRect()
+	if not left then return nil end
+	local scale = frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
+	return left * scale, (left + width) * scale, bottom * scale, (bottom + height) * scale
+end
+
+local function FindDamageMeterSnap(frame)
+	local myLeft, myRight, myBottom, myTop = GetScaledRect(frame)
+	if not myLeft then return nil end
+	local bestX, bestY
+	for i = 1, 10 do
+		local target = _G["DamageMeterSessionWindow" .. i]
+		if target and target ~= frame and target:IsVisible() then
+			local left, right, bottom, top = GetScaledRect(target)
+			if left then
+				if myTop >= bottom - SNAP_RANGE and myBottom <= top + SNAP_RANGE then
+					for _, pair in ipairs({{myLeft, right}, {myRight, left}, {myLeft, left}, {myRight, right}}) do
+						local delta = pair[2] - pair[1]
+						if math.abs(delta) <= SNAP_RANGE and (not bestX or math.abs(delta) < math.abs(bestX.delta)) then bestX = {delta = delta, line = pair[2]} end
+					end
+				end
+				if myRight >= left - SNAP_RANGE and myLeft <= right + SNAP_RANGE then
+					for _, pair in ipairs({{myTop, bottom}, {myBottom, top}, {myTop, top}, {myBottom, bottom}}) do
+						local delta = pair[2] - pair[1]
+						if math.abs(delta) <= SNAP_RANGE and (not bestY or math.abs(delta) < math.abs(bestY.delta)) then bestY = {delta = delta, line = pair[2]} end
+					end
+				end
+			end
+		end
+	end
+	return bestX, bestY
+end
+
+local function GetSnapLines()
+	if ThreatMeter.snapLines then return ThreatMeter.snapLines end
+	local holder = CreateFrame("Frame", nil, UIParent)
+	holder:SetFrameStrata("DIALOG")
+	holder:SetAllPoints(UIParent)
+	holder.vertical = holder:CreateTexture(nil, "OVERLAY")
+	holder.vertical:SetColorTexture(1, 0, 0, 0.9)
+	holder.vertical:SetWidth(2)
+	holder.horizontal = holder:CreateTexture(nil, "OVERLAY")
+	holder.horizontal:SetColorTexture(1, 0, 0, 0.9)
+	holder.horizontal:SetHeight(2)
+	holder:Hide()
+	ThreatMeter.snapLines = holder
+	return holder
+end
+
+local function UpdateSnapLines(frame)
+	local lines = GetSnapLines()
+	local snapX, snapY = FindDamageMeterSnap(frame)
+	lines.vertical:SetShown(snapX ~= nil)
+	lines.horizontal:SetShown(snapY ~= nil)
+	if snapX then
+		lines.vertical:ClearAllPoints()
+		lines.vertical:SetPoint("TOP", UIParent, "TOPLEFT", snapX.line, 0)
+		lines.vertical:SetPoint("BOTTOM", UIParent, "BOTTOMLEFT", snapX.line, 0)
+	end
+	if snapY then
+		lines.horizontal:ClearAllPoints()
+		lines.horizontal:SetPoint("LEFT", UIParent, "BOTTOMLEFT", 0, snapY.line)
+		lines.horizontal:SetPoint("RIGHT", UIParent, "BOTTOMRIGHT", 0, snapY.line)
+	end
+end
+
 function ThreatMeter:SetupDamageMeterEditMode()
 	if not self.frame or self.frame.Selection or not EditModeSystemSelectionMixin then return end
 	local frame = self.frame
@@ -232,13 +301,40 @@ function ThreatMeter:SetupDamageMeterEditMode()
 		CreateEditModeOptions(system):Show()
 	end
 	frame.ClearHighlight = function(system) system.Selection:Hide() system.isSelected = false end
+	for _, name in ipairs({"GetFrameMagneticEligibility", "IsFrameAnchoredToMe", "HasValidSelectionRect", "IsVerticallyAlignedWithFrame", "IsHorizontallyAlignedWithFrame", "IsToTheLeftOfFrame", "IsToTheRightOfFrame", "IsAboveFrame", "IsBelowFrame", "GetScaledSelectionCenter", "GetScaledCenter", "GetScaledSelectionSides", "GetLeftOffset", "GetRightOffset", "GetTopOffset", "GetBottomOffset", "GetSelectionOffset", "GetCombinedSelectionOffset", "GetCombinedCenterOffset", "GetSnapOffsets", "SnapToFrame"}) do
+		if frame[name] == nil and EditModeSystemMixin[name] then frame[name] = EditModeSystemMixin[name] end
+	end
 	frame.OnDragStart = function(system)
 		if not ThreatMeter.editModeActive or not system.isSelected then return end
 		system:StartMoving()
+		system.isDragging = true
+		if EditModeManagerFrame and EditModeManagerFrame.SetSnapPreviewFrame then EditModeManagerFrame:SetSnapPreviewFrame(system) end
+		if EditModeManagerFrame and EditModeManagerFrame.IsSnapEnabled and EditModeManagerFrame:IsSnapEnabled() then
+			local lines = GetSnapLines()
+			lines:SetScript("OnUpdate", function() UpdateSnapLines(system) end)
+			lines:Show()
+		end
 	end
 	frame.OnDragStop = function(system)
 		if not ThreatMeter.editModeActive then return end
+		if EditModeManagerFrame and EditModeManagerFrame.ClearSnapPreviewFrame then EditModeManagerFrame:ClearSnapPreviewFrame() end
 		system:StopMovingOrSizing()
+		system.isDragging = false
+		local lines = GetSnapLines()
+		lines:SetScript("OnUpdate", nil)
+		lines:Hide()
+		if EditModeManagerFrame and EditModeManagerFrame.IsSnapEnabled and EditModeManagerFrame:IsSnapEnabled() and EditModeMagnetismManager then
+			local snapX, snapY = FindDamageMeterSnap(system)
+			if not snapX and not snapY then EditModeMagnetismManager:ApplyMagnetism(system) end
+			local left, top = system:GetLeft(), system:GetTop()
+			if left and top then
+				local scale = system:GetEffectiveScale() / UIParent:GetEffectiveScale()
+				if snapX then left = left + snapX.delta / scale end
+				if snapY then top = top + snapY.delta / scale end
+				system:ClearAllPoints()
+				system:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+			end
+		end
 		ThreatMeter:SaveThreatWindowPosition()
 	end
 	frame.Selection:SetScript("OnMouseDown", function(_, button) if button == "LeftButton" then frame:SelectSystem() end end)
