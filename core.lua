@@ -9,11 +9,6 @@ local MIN_HEIGHT = 120
 local MAX_WIDTH = 600
 local MAX_HEIGHT = 400
 
-function ThreatMeter:IsSecret(value)
-	if type(_G.issecretvalue) == "function" then return _G.issecretvalue(value) end
-	return false
-end
-
 function ThreatMeter:IsSafe(value)
 	if ThreatMeter:IsSecret(value) then return false end
 	return value ~= nil
