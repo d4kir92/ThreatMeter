@@ -81,9 +81,34 @@ local function GetClassColor(classToken)
 	return 0.25, 0.55, 0.85
 end
 
+local ATLAS_TEXTURE_GETTERS = {
+	SetNormalAtlas = "GetNormalTexture",
+	SetPushedAtlas = "GetPushedTexture",
+	SetHighlightAtlas = "GetHighlightTexture",
+	SetDisabledAtlas = "GetDisabledTexture"
+}
+
+local function AtlasApplied(region, method, atlas)
+	if C_Texture and type(C_Texture.GetAtlasInfo) == "function" then
+		local ok, info = pcall(C_Texture.GetAtlasInfo, atlas)
+		if ok and info then return true end
+	end
+	local texture = region
+	local getter = ATLAS_TEXTURE_GETTERS[method]
+	if getter then
+		if type(region[getter]) ~= "function" then return false end
+		texture = region[getter](region)
+	end
+	if not texture or type(texture.GetAtlas) ~= "function" then return false end
+	local ok, current = pcall(texture.GetAtlas, texture)
+	return ok and type(current) == "string" and string.lower(current) == string.lower(atlas)
+end
+
 local function TrySetAtlas(region, method, atlas, useAtlasSize)
 	if not region or type(region[method]) ~= "function" then return false end
-	return pcall(region[method], region, atlas, useAtlasSize)
+	local ok, result = pcall(region[method], region, atlas, useAtlasSize)
+	if not ok or result == false then return false end
+	return AtlasApplied(region, method, atlas)
 end
 
 local function PublicCall(fn, ...)
@@ -340,7 +365,7 @@ function ThreatMeter:CreateThreatRow(index)
 	row.bar:SetMinMaxValues(0, 100)
 	row.bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	local barTexture = row.bar:GetStatusBarTexture()
-	if barTexture then TrySetAtlas(barTexture, "SetAtlas", "UI-HUD-CoolDownManager-Bar") end
+	if barTexture and not TrySetAtlas(barTexture, "SetAtlas", "UI-HUD-CoolDownManager-Bar") then row.bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar") end
 	row.bg = row.bar:CreateTexture(nil, "BACKGROUND")
 	row.bg:SetPoint("TOPLEFT", row.bar, "TOPLEFT", -2, 2)
 	row.bg:SetPoint("BOTTOMRIGHT", row.bar, "BOTTOMRIGHT", 2, -2)
@@ -397,7 +422,7 @@ function ThreatMeter:ApplyThreatRowStyle(row)
 	if style == 1 and TrySetAtlas(row.bg, "SetAtlas", "UI-HUD-CoolDownManager-Bar-BG") then
 		row.edge:Hide()
 	else
-		TrySetAtlas(row.bg, "SetAtlas", "ui-damagemeters-bar-shadowbg")
+		if not TrySetAtlas(row.bg, "SetAtlas", "ui-damagemeters-bar-shadowbg") then row.bg:SetColorTexture(0.035, 0.035, 0.035, 0.9) end
 		row.edge:Show()
 	end
 end
@@ -734,18 +759,8 @@ function ThreatMeter:CreateMainFrame()
 	if not TrySetAtlas(self.header.bg, "SetAtlas", "ui-damagemeters-header-bar") then
 		self.header.bg:SetColorTexture(0.055, 0.055, 0.055, 0.98)
 	end
-	local dropdownOk, staticType = pcall(CreateFrame, "DropdownButton", nil, self.header, "WowStyle1ArrowDropdownTemplate")
-	if dropdownOk and staticType then
-		self.staticType = staticType
-		self.staticType:SetPoint("TOPLEFT", self.header, "TOPLEFT", 1, -3)
-		self.staticType:EnableMouse(false)
-	end
 	self.header.title = self.header:CreateFontString(nil, "OVERLAY", "GameFontNormalMed1")
-	if self.staticType and self.staticType.Arrow then
-		self.header.title:SetPoint("LEFT", self.staticType.Arrow, "RIGHT", 0, 3)
-	else
-		self.header.title:SetPoint("TOPLEFT", self.header, "TOPLEFT", 1, -9)
-	end
+	self.header.title:SetPoint("TOPLEFT", self.header, "TOPLEFT", 6, -9)
 	self.header.title:SetText("Threat")
 	self.header.title:SetTextColor(1, 0.82, 0)
 	self.minimizeButton = CreateFrame("Button", nil, self.header)
