@@ -1,5 +1,5 @@
 local _, ThreatMeter = ...
-ThreatMeter:SetAddonOutput("ThreatMeter", 132117)
+ThreatMeter:SetAddonOutput()
 local tmset = nil
 local DEFAULT_WIDTH = 420
 local DEFAULT_HEIGHT = 520
@@ -133,7 +133,7 @@ function ThreatMeter:InitSettings()
 		end,
 		["getCollapsed"] = function(key) return GetCollapsed(key) end,
 		["setCollapsed"] = function(key, collapsed) SetCollapsed(key, collapsed) end,
-		["title"] = format("|T132117:16:16:0:0|t ThreatMeter v%s", ThreatMeter:GetVersion())
+		["title"] = format("|T%s:16:16:0:0|t ThreatMeter v%s", ThreatMeter:GetAddonIcon(), ThreatMeter:GetVersion())
 	})
 
 	tmset:SuspendLayout()
@@ -225,17 +225,17 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 			TMTAB["METERWINDOWVERSION"] = 6
 		end
 
-		ThreatMeter:SetVersion(132117, "0.7.3")
+		ThreatMeter:SetVersion()
 		ThreatMeter:InitSettings()
 		ThreatMeter:CreateMainFrame()
 		ThreatMeter:CreateLegacyFrame()
 		ThreatMeter:AddSlash("threatmeter", ThreatMeter.ToggleSettings)
 		ThreatMeter:CreateMinimapButton({
 			["name"] = "ThreatMeter",
-			["icon"] = 132117,
+			["icon"] = ThreatMeter:GetAddonIcon(),
 			["var"] = nil,
 			["dbtab"] = TMTAB,
-			["vTT"] = {{"|T132117:16:16:0:0|t ThreatMeter", "v" .. ThreatMeter:GetVersion()}, {ThreatMeter:Trans("LID_LEFTCLICK"), ThreatMeter:Trans("LID_OPENSETTINGS")}, {ThreatMeter:Trans("LID_RIGHTCLICK"), ThreatMeter:Trans("LID_UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("LID_SHIFTRIGHTCLICK"), ThreatMeter:Trans("LID_HIDEMINIMAPBUTTON")}},
+			["vTT"] = {{format("|T%s:16:16:0:0|t ThreatMeter", ThreatMeter:GetAddonIcon()),"v" .. ThreatMeter:GetVersion()}, {ThreatMeter:Trans("LID_LEFTCLICK"), ThreatMeter:Trans("LID_OPENSETTINGS")}, {ThreatMeter:Trans("LID_RIGHTCLICK"), ThreatMeter:Trans("LID_UNLOCKLOCKTEXT")}, {ThreatMeter:Trans("LID_SHIFTRIGHTCLICK"), ThreatMeter:Trans("LID_HIDEMINIMAPBUTTON")}},
 			["funcL"] = function() ThreatMeter:ToggleSettings() end,
 			["funcR"] = function() ThreatMeter:ToggleFrame() end,
 			["funcSR"] = function()
