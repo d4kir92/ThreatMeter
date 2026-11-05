@@ -434,6 +434,7 @@ end
 function ThreatMeter:RefreshThreatLayout()
 	if not self.frame or not self.rows then return end
 	if TMTAB["DAMAGEMETERCOLLAPSED"] == true then
+		self.visibleRowCount = 0
 		for _, row in ipairs(self.rows) do row:Hide() end
 		return
 	end
