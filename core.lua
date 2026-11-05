@@ -795,10 +795,14 @@ function ThreatMeter:CreateMainFrame()
 		self.resizeGrip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
 	end
 	self.resizeGrip:SetScript("OnMouseDown", function(_, button)
-		if button == "LeftButton" and TMTAB["DAMAGEMETERCOLLAPSED"] ~= true and (ThreatMeter.editModeActive or not ThreatMeter:GV(TMTAB, "lockedText", true)) and not InCombatLockdown() then ThreatMeter.frame:StartSizing("BOTTOMRIGHT") end
+		if button == "LeftButton" and TMTAB["DAMAGEMETERCOLLAPSED"] ~= true and (ThreatMeter.editModeActive or not ThreatMeter:GV(TMTAB, "lockedText", true)) and not InCombatLockdown() then
+			ThreatMeter.frame:StartSizing("BOTTOMRIGHT")
+			if ThreatMeter.StartThreatResizeSnap then ThreatMeter:StartThreatResizeSnap() end
+		end
 	end)
 	self.resizeGrip:SetScript("OnMouseUp", function()
 		ThreatMeter.frame:StopMovingOrSizing()
+		if ThreatMeter.StopThreatResizeSnap then ThreatMeter:StopThreatResizeSnap() end
 		ThreatMeter:SaveThreatWindowSize()
 		ThreatMeter:RefreshThreatLayout()
 		if ThreatMeter.editModeOptions and ThreatMeter.editModeOptions:IsShown() then

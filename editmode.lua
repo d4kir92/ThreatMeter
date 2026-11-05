@@ -220,7 +220,7 @@ local function GetScaledRect(frame)
 	return left * scale, (left + width) * scale, bottom * scale, (bottom + height) * scale
 end
 
-local function FindDamageMeterSnap(frame)
+local function FindDamageMeterSnap(frame, sizing)
 	local myLeft, myRight, myBottom, myTop = GetScaledRect(frame)
 	if not myLeft then return nil end
 	local bestX, bestY
@@ -230,13 +230,13 @@ local function FindDamageMeterSnap(frame)
 			local left, right, bottom, top = GetScaledRect(target)
 			if left then
 				if myTop >= bottom - SNAP_RANGE and myBottom <= top + SNAP_RANGE then
-					for _, pair in ipairs({{myLeft, right}, {myRight, left}, {myLeft, left}, {myRight, right}}) do
+					for _, pair in ipairs(sizing and {{myRight, left}, {myRight, right}} or {{myLeft, right}, {myRight, left}, {myLeft, left}, {myRight, right}}) do
 						local delta = pair[2] - pair[1]
 						if math.abs(delta) <= SNAP_RANGE and (not bestX or math.abs(delta) < math.abs(bestX.delta)) then bestX = {delta = delta, line = pair[2]} end
 					end
 				end
 				if myRight >= left - SNAP_RANGE and myLeft <= right + SNAP_RANGE then
-					for _, pair in ipairs({{myTop, bottom}, {myBottom, top}, {myTop, top}, {myBottom, bottom}}) do
+					for _, pair in ipairs(sizing and {{myBottom, top}, {myBottom, bottom}} or {{myTop, bottom}, {myBottom, top}, {myTop, top}, {myBottom, bottom}}) do
 						local delta = pair[2] - pair[1]
 						if math.abs(delta) <= SNAP_RANGE and (not bestY or math.abs(delta) < math.abs(bestY.delta)) then bestY = {delta = delta, line = pair[2]} end
 					end
@@ -263,9 +263,9 @@ local function GetSnapLines()
 	return holder
 end
 
-local function UpdateSnapLines(frame)
+local function UpdateSnapLines(frame, sizing)
 	local lines = GetSnapLines()
-	local snapX, snapY = FindDamageMeterSnap(frame)
+	local snapX, snapY = FindDamageMeterSnap(frame, sizing)
 	lines.vertical:SetShown(snapX ~= nil)
 	lines.horizontal:SetShown(snapY ~= nil)
 	if snapX then
@@ -278,6 +278,43 @@ local function UpdateSnapLines(frame)
 		lines.horizontal:SetPoint("LEFT", UIParent, "BOTTOMLEFT", 0, snapY.line)
 		lines.horizontal:SetPoint("RIGHT", UIParent, "BOTTOMRIGHT", 0, snapY.line)
 	end
+end
+
+function ThreatMeter:StartThreatResizeSnap()
+	if not self.editModeActive or not self.frame or not EditModeManagerFrame or not EditModeManagerFrame.IsSnapEnabled or not EditModeManagerFrame:IsSnapEnabled() then return end
+	local frame = self.frame
+	local lines = GetSnapLines()
+	lines:SetScript("OnUpdate", function() UpdateSnapLines(frame, true) end)
+	lines:Show()
+	self.resizeSnapActive = true
+end
+
+function ThreatMeter:StopThreatResizeSnap()
+	if not self.resizeSnapActive then return end
+	self.resizeSnapActive = nil
+	local lines = GetSnapLines()
+	lines:SetScript("OnUpdate", nil)
+	lines:Hide()
+	local frame = self.frame
+	if not frame or not self.editModeActive or not EditModeManagerFrame or not EditModeManagerFrame.IsSnapEnabled or not EditModeManagerFrame:IsSnapEnabled() then return end
+	local snapX, snapY = FindDamageMeterSnap(frame, true)
+	local left, top = frame:GetLeft(), frame:GetTop()
+	if not (snapX or snapY) or not left or not top then return end
+	local scale = frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
+	local width, height = frame:GetSize()
+	if snapX then width = width + snapX.delta / scale end
+	if snapY then height = height - snapY.delta / scale end
+	if type(frame.GetResizeBounds) == "function" then
+		local minW, minH, maxW, maxH = frame:GetResizeBounds()
+		if minW and minW > 0 then width = math.max(width, minW) end
+		if minH and minH > 0 then height = math.max(height, minH) end
+		if maxW and maxW > 0 then width = math.min(width, maxW) end
+		if maxH and maxH > 0 then height = math.min(height, maxH) end
+	end
+	frame:ClearAllPoints()
+	frame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+	frame:SetSize(width, height)
+	self:SaveThreatWindowPosition()
 end
 
 function ThreatMeter:SetupDamageMeterEditMode()
